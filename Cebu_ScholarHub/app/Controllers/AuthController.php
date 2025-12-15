@@ -39,35 +39,21 @@ class AuthController extends BaseController
         $session = Services::session();
         $session->regenerate(true);
 
-        // Record last login
-        $users->update($user['id'], ['last_login_at' => Time::now()]);
+        if ($user) {
+            $session->set('auth_user', [
+                'id' => $user['id'],
+                'email' => $user['email'],
+                'full_name' => $user['full_name'],
+                'role' => $user['role'],
+                'school_id' => $user['school_id'] ?? null
+            ]);
 
-        // Store light profile in session
-        $authData = [
-        'id'        => (int) $user['id'],
-        'email'     => $user['email'],
-        'full_name' => $user['full_name'],
-        'role'      => $user['role'],
-        'school_id' => $user['school_id'] ?? null,
-    ];
-    
-    $session->set('auth_user', $authData);
-    
-    // Enhanced logging
-    log_message('debug', 'Login attempt successful');
-    log_message('debug', 'User data: ' . json_encode([
-        'id' => $user['id'],
-        'email' => $user['email'],
-        'role' => $user['role']
-    ]));
-         log_message('debug', 'User logged in with role: ' . $user['role']);
-        // Redirect to intended URL or dashboard
-        $intended = $session->get('intended_url');
-        if ($intended) {
-            $session->remove('intended_url');
-            return redirect()->to($intended);
+            // Record last login
+            $users->update($user['id'], ['last_login_at' => Time::now()]);
+
+            // Redirect to dashboard (will handle role-specific routing)
+            return redirect()->to('dashboard');
         }
-        return redirect()->to(site_url('dashboard'));
     }
 
     public function logout()

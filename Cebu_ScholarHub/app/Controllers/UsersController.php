@@ -90,45 +90,65 @@ class UsersController extends BaseController
     return view('admin/user_create', $data);
 }
     // Edit User
-    public function edit($id)
-    {
-        $authUser = session()->get('auth_user');
+    public function edit($id = null)
+{
+    // Check authorization
+    $authUser = session()->get('auth_user');
     if (!$authUser || $authUser['role'] !== 'admin') {
         return redirect()->to('/');
     }
-        // Get user data by id
-        $data['user'] = $this->userModel->getUserById($id);
-        
-        // Handle the form submission
-        if ($this->request->getMethod() == 'POST') {
-            $validation =  \Config\Services::validation();
 
-            $validation->setRules([
-                'email' => 'required|valid_email',
-                'full_name' => 'required',
-                'role' => 'required|in_list[admin,staff,school_admin,school_staff,scholar]',
-            ]);
-
-            if ($validation->run($this->request->getPost())) {
-                // Update user data
-                $updateData = [
-                    'email' => $this->request->getPost('email'),
-                    'full_name' => $this->request->getPost('full_name'),
-                    'role' => $this->request->getPost('role'),
-                    'status' => $this->request->getPost('status') ?? 'active',
-                ];
-
-                $this->userModel->update($id, $updateData);
-
-                return redirect()->to('/admin/users')->with('message', 'User updated successfully!');
-            } else {
-                return redirect()->back()->withInput()->with('errors', $validation->getErrors());
-            }
-        }
-
-        return view('admin/user_edit', $data);
+    // Get user and school data
+    $user = $this->userModel->getUserById($id);
+    
+    if (!$user) {
+        return redirect()->to('/admin/users')
+            ->with('error', 'User not found');
     }
 
+    // Get schools for dropdown if needed
+    $schoolModel = new \App\Models\SchoolModel();
+    $data = [
+        'title' => 'Edit User',
+        'user' => $user,
+        'schools' => $schoolModel->findAll()
+    ];
+
+    if ($this->request->getMethod() === 'POST') {
+        // Prepare update data
+        $updateData = [
+            'email' => $this->request->getPost('email'),
+            'full_name' => $this->request->getPost('full_name'),
+            'role' => $this->request->getPost('role'),
+            'status' => $this->request->getPost('status'),
+            'school_id' => $this->request->getPost('school_id')
+        ];
+
+        // Only update password if provided
+        if ($password = $this->request->getPost('password')) {
+            $updateData['password'] = $password;
+        }
+
+        try {
+            if ($this->userModel->update($id, $updateData)) {
+                return redirect()->to('/admin/users')
+                    ->with('message', 'User updated successfully');
+            }
+
+            return redirect()->back()
+                ->with('error', implode(', ', $this->userModel->errors()))
+                ->withInput();
+
+        } catch (\Exception $e) {
+            log_message('error', '[User Edit] ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Error updating user')
+                ->withInput();
+        }
+    }
+
+    return view('admin/user_edit', $data);
+}
     // Delete User
     public function delete($id)
     {

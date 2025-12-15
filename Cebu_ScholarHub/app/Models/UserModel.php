@@ -60,4 +60,12 @@ protected $deletedField = 'deleted_at';
                    ->join('schools', 'schools.id = users.school_id', 'left')
                    ->findAll();
     }
+     public function getUserById(int $id): ?array
+    {
+        return $this->select('users.*, schools.name as school_name')
+                   ->join('schools', 'schools.id = users.school_id', 'left')
+                   ->where('users.id', $id)
+                   ->first();
+    }
+    
 }
