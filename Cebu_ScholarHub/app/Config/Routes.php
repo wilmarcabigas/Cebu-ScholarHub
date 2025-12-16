@@ -24,8 +24,16 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('users/edit/(:num)', 'UsersController::edit/$1');
         $routes->post('users/edit/(:num)', 'UsersController::edit/$1');
         $routes->get('users/delete/(:num)', 'UsersController::delete/$1');
+        
         $routes->get('reports', 'Admin\ReportsController::index');
-        $routes->get('schools', 'Admin\SchoolsController::index');
+
+        $routes->get('schools', 'Admin\Schools::index');
+        $routes->get('schools/create', 'Admin\Schools::create');
+        $routes->post('schools/store', 'Admin\Schools::store');
+        $routes->get('schools/edit/(:num)', 'Admin\Schools::edit/$1');
+        $routes->post('schools/update/(:num)', 'Admin\Schools::update/$1');
+        $routes->get('schools/delete/(:num)', 'Admin\Schools::delete/$1');
+        
     });
 
     // Staff routes
