@@ -1,6 +1,6 @@
 <?= $this->extend('layouts/base') ?>
 <?= $this->section('content') ?>
-
+<!-- wiilmar gwapo -->
 <div class="min-h-[60vh] grid place-items-center">
   <div class="w-full max-w-md">
     <div class="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl p-6">
