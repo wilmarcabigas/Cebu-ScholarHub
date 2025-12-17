@@ -51,7 +51,7 @@
                                 case 'admin': ?>
                                     <a href="<?= site_url('admin/users') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Users</a>
                                     <a href="<?= site_url('admin/schools') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Schools</a>
-                                    <a href="<?= site_url('admin/reports') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Reports</a>
+                                     <!-- <a href="<?= site_url('admin/reports') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Reports</a> -->
                                     <?php break; ?>
 
                                    <?php case 'staff': ?>
