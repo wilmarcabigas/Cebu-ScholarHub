@@ -23,18 +23,21 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
-            name="email" type="email" value="<?= old('email') ?>"
-            class="block w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-            required
+            id="email" name="email" type="email" value="<?= old('email') ?>" placeholder="INPUT EMAIL"
+            class="block w-full rounded-2xl border-2 border-black px-4 py-4 text-base placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black/20"
+            aria-label="Email" required
           >
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <input
-            name="password" type="password"
-            class="block w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-            required
-          >
+          <div class="relative">
+            <input
+              id="password" name="password" type="password" placeholder="INPUT PASSWORD"
+              class="block w-full rounded-2xl border-2 border-black px-4 py-4 text-base placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black/20"
+              required
+            >
+            <button type="button" id="togglePassword" aria-pressed="false" class="absolute inset-y-0 right-0 px-3 flex items-center text-sm text-black font-medium" aria-label="Show password">Show</button>
+          </div>
         </div>
 
         <button
@@ -49,5 +52,28 @@
     </div>
   </div>
 </div>
+
+<script>
+  (function(){
+    var pw = document.getElementById('password');
+    var btn = document.getElementById('togglePassword');
+    if (!pw || !btn) return;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.addEventListener('click', function(){
+      var showing = pw.type === 'text';
+      if (!showing) {
+        pw.type = 'text';
+        btn.textContent = 'Hide';
+        btn.setAttribute('aria-pressed', 'true');
+        btn.setAttribute('aria-label', 'Hide password');
+      } else {
+        pw.type = 'password';
+        btn.textContent = 'Show';
+        btn.setAttribute('aria-pressed', 'false');
+        btn.setAttribute('aria-label', 'Show password');
+      }
+    });
+  })();
+</script>
 
 <?= $this->endSection() ?>

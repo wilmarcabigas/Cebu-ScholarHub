@@ -8,7 +8,7 @@
         <div>
             <h1 class="text-2xl font-bold tracking-tight">School Dashboard</h1>
             <p class="mt-1 text-sm text-gray-500">
-                <?= esc($school['name']) ?> Scholar Management
+                <?= esc(isset($school['name']) ? $school['name'] : '') ?> Scholar Management
             </p>
         </div>
         <div class="flex gap-3">
