@@ -8,7 +8,7 @@
         <div>
             <h1 class="text-2xl font-bold tracking-tight">School Staff Dashboard</h1>
             <p class="mt-1 text-sm text-gray-500">
-                <?= esc($school['name']) ?> • Staff Portal
+                <?= esc(isset($school['name']) ? $school['name'] : '') ?> Staff Portal
             </p>
         </div>
     </header>
