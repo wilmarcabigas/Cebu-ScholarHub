@@ -70,7 +70,7 @@
       </div>
     </div>
   <?php $auth = session()->get('auth_user'); ?>
-      <?php if ($auth['role'] === 'admin'): ?>
+      <?php if ($auth['role'] === 'admin' || $auth['role'] === "staff"): ?>
       <div class="form-group" >
           <label class="block text-sm font-medium">School</label>
           <select name="school_id" class="mt-1 p-2 border rounded-md w-full" required>

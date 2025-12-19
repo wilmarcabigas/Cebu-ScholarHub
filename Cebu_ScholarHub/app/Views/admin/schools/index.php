@@ -7,7 +7,7 @@
         <p class="text-sm text-gray-500">Manage school partnerships and access</p>
     </div>
 
-    <a href="/admin/schools/create"
+    <a href="/manage/schools/create"
        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
         + Add School
     </a>
@@ -32,11 +32,11 @@
                     <td class="px-6 py-4 text-sm text-gray-600"><?= esc($school['contact_person']) ?></td>
                     <td class="px-6 py-4 text-sm text-gray-600"><?= esc($school['contact_email']) ?></td>
                     <td class="px-6 py-4 text-right text-sm">
-                        <a href="/admin/schools/edit/<?= $school['id'] ?>"
+                        <a href="/manage/schools/edit/<?= $school['id'] ?>"
                            class="text-indigo-600 hover:underline mr-3">
                             Edit
                         </a>
-                        <a href="/admin/schools/delete/<?= $school['id'] ?>"
+                        <a href="/manage/schools/delete/<?= $school['id'] ?>"
                            onclick="return confirm('Are you sure?')"
                            class="text-red-600 hover:underline">
                             Delete
