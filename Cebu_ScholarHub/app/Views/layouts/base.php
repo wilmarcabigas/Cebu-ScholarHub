@@ -79,6 +79,28 @@
     </nav>
   <?php endif; ?>
 
+  <!-- Back Button Row (OPTIONAL) -->
+  <?php
+    $showBack = $show_back ?? false;
+    $backUrl  = $back_url ?? null;
+  ?>
+  <?php if ($showBack): ?>
+    <div class="container mt-4">
+      <?php if ($backUrl): ?>
+        <a href="<?= esc($backUrl) ?>"
+           class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+          ← Back
+        </a>
+      <?php else: ?>
+        <button type="button"
+                onclick="goBack()"
+                class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+          ← Back
+        </button>
+      <?php endif; ?>
+    </div>
+  <?php endif; ?>
+
   <!-- Page -->
   <main class="container my-8">
     <?= $this->renderSection('content') ?>
@@ -90,5 +112,23 @@
       © <?= date('Y') ?> Cebu City Scholars Office • All rights reserved.
     </div>
   </footer>
+
+  <!-- Back Button Script -->
+  <script>
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "<?= site_url('dashboard') ?>";
+      }
+    }
+  </script>
+
+  <!-- Tailwind helper -->
+  <style>
+    .nav-link {
+      @apply text-gray-300 hover:text-white px-3 py-2 rounded-md font-medium;
+    }
+  </style>
 </body>
 </html>

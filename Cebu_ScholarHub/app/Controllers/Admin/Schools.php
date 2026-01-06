@@ -16,13 +16,23 @@ class Schools extends BaseController
 
     public function index()
     {
-        $data['schools'] = $this->schoolModel->findAll();
+
+        $data = [
+        'title' => 'Manage schools',
+        'schools' => $this->schoolModel->findAll(),
+        'show_back' => true,
+        'back_url'  => site_url('dashboard'),
+    ];
         return view('admin/schools/index', $data);
     }
 
     public function create()
     {
-        return view('admin/schools/create');
+        return view('admin/schools/create', [
+        'show_back' => true,
+        'back_url'  => site_url('admin/schools'), // URL to go back to list page
+        'title'     => 'Add New School'          // Optional: for page title
+    ]);
     }
 
     public function store()
@@ -40,10 +50,21 @@ class Schools extends BaseController
     }
 
     public function edit($id)
-    {
-        $data['school'] = $this->schoolModel->find($id);
-        return view('admin/schools/edit', $data);
+{
+    $school = $this->schoolModel->find($id);
+
+    if (!$school) {
+        return redirect()->to(site_url('admin/schools'))
+            ->with('error', 'School not found');
     }
+
+    return view('admin/schools/edit', [
+        'title'     => 'Edit School',
+        'school'    => $school,
+        'show_back' => true,
+        'back_url'  => site_url('admin/schools'), // Back to list
+    ]);
+}
 
     public function update($id)
     {

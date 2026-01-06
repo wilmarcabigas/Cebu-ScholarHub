@@ -32,7 +32,13 @@ class UsersController extends BaseController
     }
 
     // Get all users with school info
-    $data['users'] = $this->userModel->getUsersWithSchool();
+$data = [
+        'title' => 'Manage Users',
+        'users' => $this->userModel->getUsersWithSchool(),
+        'show_back' => true,
+        'back_url'  => site_url('dashboard'),
+    ];
+    
     return view('admin/user_list', $data);
 }
 
@@ -48,7 +54,12 @@ class UsersController extends BaseController
 
     // Get schools for dropdown
     $schoolModel = new \App\Models\SchoolModel();
-    $data['schools'] = $schoolModel->findAll();
+   $data = [
+        'title'     => 'Create User',
+        'schools'   => $schoolModel->findAll(),
+        'show_back' => true,
+        'back_url'  => site_url('admin/users'),
+    ];
 
     if ($this->request->getMethod() === 'POST') {
         // Prepare user data
@@ -111,7 +122,9 @@ class UsersController extends BaseController
     $data = [
         'title' => 'Edit User',
         'user' => $user,
-        'schools' => $schoolModel->findAll()
+        'schools' => $schoolModel->findAll(),
+        'show_back' => true,
+        'back_url'  => site_url('admin/users')
     ];
 
     if ($this->request->getMethod() === 'POST') {
