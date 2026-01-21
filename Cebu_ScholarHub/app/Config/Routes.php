@@ -87,4 +87,15 @@ $routes->group('', ['filter' => 'guest'], static function ($routes) {
     $routes->post('login', 'AuthController::attempt');
 });
 
+$routes->group('bills', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'BillingController::index');
+    $routes->get('create', 'BillingController::create');
+    $routes->post('store', 'BillingController::store');
+    $routes->get('view/(:num)', 'BillingController::view/$1');
+});
+
+$routes->group('payments', ['filter' => 'auth'], function ($routes) {
+    $routes->post('store', 'PaymentController::store');
+});
+
 $routes->get('logout', 'AuthController::logout', ['filter' => 'auth']);
