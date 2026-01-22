@@ -43,15 +43,18 @@
                 <div class="col-span-6 sm:col-span-4">
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                     <input type="email" name="email" id="email" required
-                        value="<?= old('email') ?>"
-                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+    value="<?= old('email') ?>"
+    class="mt-1 block w-full
+           border-0 border-b-2 border-gray-400 pb-0.5
+           focus:border-indigo-500 focus:ring-0
+           sm:text-sm ">
                 </div>
 
                 <!-- Password field -->
                 <div class="col-span-6 sm:col-span-4">
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                     <input type="password" name="password" id="password" required
-                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        class="mt-1 border-0 border-b-2 border-gray-400 pb-0.5 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 ">
                 </div>
 
                 <!-- Full Name field -->
@@ -59,7 +62,7 @@
                     <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name</label>
                     <input type="text" name="full_name" id="full_name" required
                         value="<?= old('full_name') ?>"
-                        class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        class="mt-1 border-0 border-b-2 border-gray-400 pb-0.5 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 ">
                 </div>
 
                 <!-- Role field -->
@@ -74,6 +77,23 @@
                         <option value="school_staff">School Staff</option>
                         <option value="scholar">Scholar</option>
                     </select>
+                </div>
+                <!-- School field (hidden by default) -->
+                <div class="col-span-6 sm:col-span-4" id="schoolField" style="display:none;">
+                    <label for="school_id" class="block text-sm font-medium text-gray-700">
+                        Assigned School
+                    </label>
+                    <select name="school_id" id="school_id"
+                        class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm
+                               focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="">Select School</option>
+                        <?php foreach ($schools as $school): ?>
+                            <option value="<?= $school['id'] ?>" <?= old('school_id') == $school['id'] ? 'selected' : '' ?>>
+                                <?= esc($school['name']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    
                 </div>
             </div>
         </div>

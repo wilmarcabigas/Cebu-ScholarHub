@@ -18,49 +18,62 @@ class AuthController extends BaseController
     {
         $rules = [
             'email'    => 'required|valid_email',
-            'password' => 'required|min_length[6]',
+            'password' => 'required',
         ];
 
         if (! $this->validate($rules)) {
-            return redirect()->back()->withInput()->with('error', 'Invalid credentials.');
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Please enter a valid email and password.');
         }
 
-        $email    = (string) $this->request->getPost('email');
-        $password = (string) $this->request->getPost('password');
+        $email    = $this->request->getPost('email');
+        $password = $this->request->getPost('password');
 
         $users = new UserModel();
-        $user  = $users->findActiveByEmail($email);
 
-        if (! $user || ! password_verify($password, $user['password_hash'])) {
-            return redirect()->back()->withInput()->with('error', 'Invalid email or password.');
+        // 🔍 Find active user
+        $user = $users->findActiveByEmail($email);
+
+        if (! $user) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Account not found or inactive.');
         }
 
-        // Good practice: regenerate session id on login
+        // 🔐 Verify password
+        if (! password_verify($password, $user['password_hash'])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Invalid email or password.');
+        }
+
+        // 🔄 Regenerate session
         $session = Services::session();
         $session->regenerate(true);
 
-        if ($user) {
-            $session->set('auth_user', [
-                'id' => $user['id'],
-                'email' => $user['email'],
-                'full_name' => $user['full_name'],
-                'role' => $user['role'],
-                'school_id' => $user['school_id'] ?? null
-            ]);
+        // ✅ Store authenticated user
+        $session->set('auth_user', [
+            'id'        => $user['id'],
+            'email'     => $user['email'],
+            'full_name' => $user['full_name'],
+            'role'      => $user['role'],
+            'school_id' => $user['school_id'],
+        ]);
 
-            // Record last login
-            $users->update($user['id'], ['last_login_at' => Time::now()]);
+        // 🕒 Update last login
+        $users->update($user['id'], [
+            'last_login_at' => Time::now()
+        ]);
 
-            // Redirect to dashboard (will handle role-specific routing)
-            return redirect()->to('dashboard');
-        }
+        return redirect()->to('/dashboard');
     }
 
     public function logout()
     {
         $session = Services::session();
-        $session->remove('auth_user');
         $session->destroy();
-        return redirect()->to(site_url('login'))->with('message', 'Logged out.');
+
+        return redirect()->to('/login')->with('message', 'Logged out successfully.');
     }
 }

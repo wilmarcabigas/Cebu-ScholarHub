@@ -3,194 +3,201 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\UserModel;
 use App\Models\SchoolModel;
-use CodeIgniter\Controller;
+
 class UsersController extends BaseController
 {
-     protected $userModel;
+    protected $userModel;
+    protected $schoolModel;
 
     public function __construct()
     {
-        $this->userModel = new UserModel();
+        $this->userModel   = new UserModel();
+        $this->schoolModel = new SchoolModel();
     }
 
-    // Admin Dashboard
+    /* ==============================
+       USER LIST (ADMIN ONLY)
+    ============================== */
     public function index()
-{
-    // Get auth user data from session
-    $authUser = session()->get('auth_user');
-    $currentRole = $authUser['role'] ?? null;
-    
-    log_message('debug', 'Current user role: ' . ($currentRole ?? 'null'));
-    
-    // Check if logged-in user is an admin
-    if (!$currentRole || $currentRole !== 'admin') {
-        log_message('debug', 'Access denied for role: ' . ($currentRole ?? 'null'));
-        return redirect()->to('/');
-    }
+    {
+        $authUser = session()->get('auth_user');
 
-    // Get all users with school info
-$data = [
-        'title' => 'Manage Users',
-        'users' => $this->userModel->getUsersWithSchool(),
-        'show_back' => true,
-        'back_url'  => site_url('dashboard'),
-    ];
-    
-    return view('admin/user_list', $data);
-}
+        if (!$authUser || $authUser['role'] !== 'admin') {
+            return redirect()->to('/')->with('error', 'Unauthorized access');
+        }
 
-    // Create User
-      
-   public function create()
-{
-    // Check authorization
-    $authUser = session()->get('auth_user');
-    if (!$authUser || $authUser['role'] !== 'admin') {
-        return redirect()->to('/')->with('error', 'Unauthorized access');
-    }
-
-    // Get schools for dropdown
-    $schoolModel = new \App\Models\SchoolModel();
-   $data = [
-        'title'     => 'Create User',
-        'schools'   => $schoolModel->findAll(),
-        'show_back' => true,
-        'back_url'  => site_url('admin/users'),
-    ];
-
-    if ($this->request->getMethod() === 'POST') {
-        // Prepare user data
-        $userData = [
-            'email' => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'),
-            'full_name' => $this->request->getPost('full_name'),
-            'role' => $this->request->getPost('role'),
-            'status' => 'active',
-            'created_at' => date('Y-m-d H:i:s')
+        $data = [
+            'title'     => 'Manage Users',
+            'users'     => $this->userModel->getUsersWithSchool(),
+            'show_back' => true,
+            'back_url'  => site_url('dashboard'),
         ];
 
-        // Add school_id if applicable
-        if (in_array($userData['role'], ['school_admin', 'school_staff'])) {
-            $userData['school_id'] = $this->request->getPost('school_id');
-        }
-
-        try {
-            // Debug log
-            log_message('debug', 'Attempting to create user with data: ' . json_encode($userData));
-
-            if ($this->userModel->save($userData)) {
-                return redirect()->to('/admin/users')
-                    ->with('message', 'User created successfully');
-            }
-
-            return redirect()->back()
-                ->with('error', implode(', ', $this->userModel->errors()))
-                ->withInput();
-
-        } catch (\Exception $e) {
-            log_message('error', '[User Create] ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Error creating user: ' . $e->getMessage())
-                ->withInput();
-        }
+        return view('admin/user_list', $data);
     }
 
-    return view('admin/user_create', $data);
-}
-    // Edit User
+    /* ==============================
+       CREATE USER
+    ============================== */
+    public function create()
+    {
+        $authUser = session()->get('auth_user');
+
+        if (!$authUser || $authUser['role'] !== 'admin') {
+            return redirect()->to('/')->with('error', 'Unauthorized access');
+        }
+
+        $data = [
+            'title'     => 'Create User',
+            'schools'   => $this->schoolModel->findAll(),
+            'show_back' => true,
+            'back_url'  => site_url('admin/users'),
+        ];
+
+        if ($this->request->getMethod() === 'POST') {
+
+            $role     = $this->request->getPost('role');
+            $schoolId = $this->request->getPost('school_id');
+
+            /* 🔐 BACKEND VALIDATION */
+            if (in_array($role, ['school_admin', 'school_staff']) && empty($schoolId)) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Assigned school is required for school users.');
+            }
+
+            $userData = [
+                'email'      => $this->request->getPost('email'),
+                'password_hash' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+                'full_name'  => $this->request->getPost('full_name'),
+                'role'       => $role,
+                'school_id'  => in_array($role, ['school_admin', 'school_staff']) ? $schoolId : null,
+                'status'     => 'active',
+                'created_at'=> date('Y-m-d H:i:s'),
+            ];
+
+            try {
+                if ($this->userModel->insert($userData)) {
+                    return redirect()->to('/admin/users')
+                        ->with('message', 'User created successfully');
+                }
+
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', implode(', ', $this->userModel->errors()));
+
+            } catch (\Exception $e) {
+                log_message('error', '[User Create] ' . $e->getMessage());
+
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Error creating user.');
+            }
+        }
+
+        return view('admin/user_create', $data);
+    }
+
+    /* ==============================
+       EDIT USER
+    ============================== */
     public function edit($id = null)
-{
-    // Check authorization
-    $authUser = session()->get('auth_user');
-    if (!$authUser || $authUser['role'] !== 'admin') {
-        return redirect()->to('/');
-    }
+    {
+        $authUser = session()->get('auth_user');
 
-    // Get user and school data
-    $user = $this->userModel->getUserById($id);
-    
-    if (!$user) {
-        return redirect()->to('/admin/users')
-            ->with('error', 'User not found');
-    }
+        if (!$authUser || $authUser['role'] !== 'admin') {
+            return redirect()->to('/');
+        }
 
-    // Get schools for dropdown if needed
-    $schoolModel = new \App\Models\SchoolModel();
-    $data = [
-        'title' => 'Edit User',
-        'user' => $user,
-        'schools' => $schoolModel->findAll(),
-        'show_back' => true,
-        'back_url'  => site_url('admin/users')
-    ];
+        $user = $this->userModel->getUserById($id);
 
-    if ($this->request->getMethod() === 'POST') {
-        // Prepare update data
-        $updateData = [
-            'email' => $this->request->getPost('email'),
-            'full_name' => $this->request->getPost('full_name'),
-            'role' => $this->request->getPost('role'),
-            'status' => $this->request->getPost('status'),
-            'school_id' => $this->request->getPost('school_id')
+        if (!$user) {
+            return redirect()->to('/admin/users')->with('error', 'User not found');
+        }
+
+        $data = [
+            'title'     => 'Edit User',
+            'user'      => $user,
+            'schools'   => $this->schoolModel->findAll(),
+            'show_back' => true,
+            'back_url'  => site_url('admin/users'),
         ];
 
-        // Only update password if provided
-        if ($password = $this->request->getPost('password')) {
-            $updateData['password'] = $password;
-        }
+        if ($this->request->getMethod() === 'POST') {
 
-        try {
-            if ($this->userModel->update($id, $updateData)) {
-                return redirect()->to('/admin/users')
-                    ->with('message', 'User updated successfully');
+            $role     = $this->request->getPost('role');
+            $schoolId = $this->request->getPost('school_id');
+
+            if (in_array($role, ['school_admin', 'school_staff']) && empty($schoolId)) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Assigned school is required for school users.');
             }
 
-            return redirect()->back()
-                ->with('error', implode(', ', $this->userModel->errors()))
-                ->withInput();
+            $updateData = [
+                'email'     => $this->request->getPost('email'),
+                'full_name' => $this->request->getPost('full_name'),
+                'role'      => $role,
+                'status'    => $this->request->getPost('status'),
+                'school_id' => in_array($role, ['school_admin', 'school_staff']) ? $schoolId : null,
+            ];
 
-        } catch (\Exception $e) {
-            log_message('error', '[User Edit] ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Error updating user')
-                ->withInput();
+            if ($password = $this->request->getPost('password')) {
+                $updateData['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+            }
+
+            try {
+                if ($this->userModel->update($id, $updateData)) {
+                    return redirect()->to('/admin/users')
+                        ->with('message', 'User updated successfully');
+                }
+
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', implode(', ', $this->userModel->errors()));
+
+            } catch (\Exception $e) {
+                log_message('error', '[User Edit] ' . $e->getMessage());
+
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Error updating user.');
+            }
         }
+
+        return view('admin/user_edit', $data);
     }
 
-    return view('admin/user_edit', $data);
-}
-    // Delete User
+    /* ==============================
+       DELETE USER
+    ============================== */
     public function delete($id)
     {
-       $authUser = session()->get('auth_user');
-    if (!$authUser || $authUser['role'] !== 'admin') {
-        return redirect()->to('/');
-    }
+        $authUser = session()->get('auth_user');
 
-        // Delete user by id
+        if (!$authUser || $authUser['role'] !== 'admin') {
+            return redirect()->to('/');
+        }
+
         $this->userModel->delete($id);
-        return redirect()->to('/admin/users')->with('message', 'User deleted successfully!');
+
+        return redirect()->to('/admin/users')
+            ->with('message', 'User deleted successfully');
     }
 
-  
-public function checkRole()
-{
-    // Add more detailed session debugging
-    $sessionData = [
-        'role' => session()->get('role'),
-        'user_id' => session()->get('user_id'),
-        'auth_user' => session()->get('auth_user'),
-        'logged_in' => session()->get('logged_in'),
-        'all_session_data' => session()->get()
-    ];
-    
-    // Log the session data
-    log_message('debug', 'Session Data: ' . json_encode($sessionData));
-    
-    // Display the data
-    dd($sessionData);
-}
+    /* ==============================
+       DEBUG ROLE
+    ============================== */
+    public function checkRole()
+    {
+        $sessionData = [
+            'auth_user' => session()->get('auth_user'),
+            'all'       => session()->get(),
+        ];
+
+        log_message('debug', 'Session Debug: ' . json_encode($sessionData));
+        dd($sessionData);
+    }
 }
