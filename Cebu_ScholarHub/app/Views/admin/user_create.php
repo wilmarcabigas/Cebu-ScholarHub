@@ -44,25 +44,23 @@
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                     <input type="email" name="email" id="email" required
     value="<?= old('email') ?>"
-    class="mt-1 block w-full
-           border-0 border-b-2 border-gray-400 pb-0.5
-           focus:border-indigo-500 focus:ring-0
-           sm:text-sm ">
+    class="mt-1 p-2 border border-gray-300 rounded-md w-full">
                 </div>
 
                 <!-- Password field -->
                 <div class="col-span-6 sm:col-span-4">
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                     <input type="password" name="password" id="password" required
-                        class="mt-1 border-0 border-b-2 border-gray-400 pb-0.5 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 ">
+                        class="mt-1 p-2 border border-gray-300 rounded-md w-full">
                 </div>
 
                 <!-- Full Name field -->
                 <div class="col-span-6 sm:col-span-4">
                     <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name</label>
                     <input type="text" name="full_name" id="full_name" required
+                        class="mt-1 p-2 border border-gray-300 rounded-md w-full"
                         value="<?= old('full_name') ?>"
-                        class="mt-1 border-0 border-b-2 border-gray-400 pb-0.5 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 ">
+                        class=" ">
                 </div>
 
                 <!-- Role field -->

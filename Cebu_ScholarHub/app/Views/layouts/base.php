@@ -40,26 +40,29 @@
   </nav>
 
   <!-- Role-based Navigation -->
-  <?php if (auth_user()): ?>
+   
+  <?php
+/*
+if (auth_user()):
+?>
     <nav class="bg-gray-800">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
                     <div class="hidden md:block">
                         <div class="flex items-baseline space-x-4">
-                            <?php switch(auth_user()['role']): 
+                            <?php switch(auth_user()['role']):
                                 case 'admin': ?>
                                     <a href="<?= site_url('admin/users') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Users</a>
                                     <a href="<?= site_url('admin/schools') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Schools</a>
-                                     <!-- <a href="<?= site_url('admin/reports') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Reports</a> -->
                                     <?php break; ?>
 
-                                   <?php case 'staff': ?>
+                                <?php case 'staff': ?>
                                     <a href="<?= site_url('admin/schools') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Schools</a>
                                     <a href="<?= site_url('admin/reports') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Reports</a>
                                     <?php break; ?>
-                                
-                                <?php case 'school_admin': 
+
+                                <?php case 'school_admin':
                                 case 'school_staff': ?>
                                     <a href="<?= site_url('school/scholars') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Scholars</a>
                                     <a href="<?= site_url('school/billing') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Billing</a>
@@ -77,7 +80,13 @@
             </div>
         </div>
     </nav>
-  <?php endif; ?>
+<?php
+endif;
+*/
+?>
+
+
+
 
   <!-- Back Button Row (OPTIONAL) -->
   <?php

@@ -24,7 +24,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
             id="email" name="email" type="email" value="<?= old('email') ?>" placeholder="INPUT EMAIL"
-            class="block w-full rounded-2xl border-2 border-black px-4 py-4 text-base placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black/20"
+            class="mt-1 p-2 border border-gray-300 rounded-md w-full"
             aria-label="Email" required
           >
         </div>
@@ -33,7 +33,7 @@
           <div class="relative">
             <input
               id="password" name="password" type="password" placeholder="INPUT PASSWORD"
-              class="block w-full rounded-2xl border-2 border-black px-4 py-4 text-base placeholder-gray-400 focus:border-black focus:ring-1 focus:ring-black/20"
+              class="mt-1 p-2 border border-gray-300 rounded-md w-full"
               required
             >
             <button type="button" id="togglePassword" aria-pressed="false" class="absolute inset-y-0 right-0 px-3 flex items-center text-sm text-black font-medium" aria-label="Show password">Show</button>

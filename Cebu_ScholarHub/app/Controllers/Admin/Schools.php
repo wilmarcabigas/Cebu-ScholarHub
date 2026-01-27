@@ -30,7 +30,7 @@ class Schools extends BaseController
     {
         return view('admin/schools/create', [
         'show_back' => true,
-        'back_url'  => site_url('admin/schools'), // URL to go back to list page
+        'back_url'  => site_url('manage/schools'), // URL to go back to list page
         'title'     => 'Add New School'          // Optional: for page title
     ]);
     }
