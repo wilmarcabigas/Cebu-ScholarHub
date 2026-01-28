@@ -30,7 +30,7 @@ class Schools extends BaseController
     {
         return view('admin/schools/create', [
         'show_back' => true,
-        'back_url'  => site_url('manage/schools'), // URL to go back to list page
+        'back_url'  => site_url('admin/schools'), // URL to go back to list page
         'title'     => 'Add New School'          // Optional: for page title
     ]);
     }
@@ -46,7 +46,7 @@ class Schools extends BaseController
             'contact_number'  => $this->request->getPost('contact_number'),
         ]);
 
-        return redirect()->to('/manage/schools')->with('success', 'School added successfully');
+        return redirect()->to('/admin/schools')->with('success', 'School added successfully');
     }
 
     public function edit($id)
@@ -77,7 +77,7 @@ class Schools extends BaseController
             'contact_number'  => $this->request->getPost('contact_number'),
         ]);
 
-        return redirect()->to('/manage/schools')->with('success', 'School updated successfully');
+        return redirect()->to('/admin/schools')->with('success', 'School updated successfully');
     }
 
     public function delete($id)
@@ -85,6 +85,6 @@ class Schools extends BaseController
         // Soft delete
         $this->schoolModel->delete($id);
 
-        return redirect()->to('/manage/schools')->with('success', 'School deleted successfully');
+        return redirect()->to('/admin/schools')->with('success', 'School deleted successfully');
     }
 }

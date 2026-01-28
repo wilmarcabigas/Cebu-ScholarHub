@@ -17,7 +17,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
 
     // Admin routes
-    $routes->group('admin', ['filter' => 'role:admin'], static function ($routes) {
+    $routes->group('admin', ['filter' => 'role:admin,staff'], static function ($routes) {
         $routes->get('users', 'UsersController::index');
         $routes->get('users/create', 'UsersController::create');
         $routes->post('users/create', 'UsersController::create');
@@ -43,7 +43,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     });
 
     // School Admin routes
-    $routes->group('school', ['filter' => 'role:school_admin,school_staff'], function($routes) {
+    $routes->group('school', ['filter' => 'role:school_admin,school_staff,staff'], function($routes) {
     // Scholar routes
     $routes->get('scholars', 'ScholarController::index');
     $routes->get('scholars/create', 'ScholarController::create');
@@ -54,7 +54,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     
     // Other school routes
     $routes->get('billing', 'School\BillingController::index');
-    $routes->get('requirements', 'School\RequirementsController::index');
+    $routes->get('requirements',  'School\RequirementsController::index');
     $routes->get('reports', 'School\ReportsController::index');
 });
 

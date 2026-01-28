@@ -7,7 +7,7 @@
         <p class="text-sm text-gray-500">Enter school information below</p>
     </div>
 
-    <form method="post" action="/manage/schools/store" class="bg-white rounded-lg shadow p-6 space-y-5">
+    <form method="post" action="/admin/schools/store" class="bg-white rounded-lg shadow p-6 space-y-5">
         <?= csrf_field() ?>
 
         <div>
@@ -51,7 +51,7 @@
         </div>
 
         <div class="flex justify-end space-x-3 pt-4">
-            <a href="/manage/schools"
+            <a href="/admin/schools"
                class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
                 Cancel
             </a>
