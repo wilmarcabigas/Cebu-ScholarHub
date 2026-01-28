@@ -18,8 +18,9 @@
   </header>
 
   <!-- Quick Actions -->
+   
   <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    <?php if (in_array($role, ['admin', 'staff'])): ?>
+    <?php if (in_array($role, ['staff','school_admin','school_staff'])): ?>
       <a href="<?= site_url('scholars/create') ?>" class="group rounded-2xl bg-white ring-1 ring-gray-200 p-5 hover:shadow-lg transition">
         <div class="flex items-center justify-between">
           <h2 class="text-base font-semibold">Add New Scholar</h2>
@@ -28,16 +29,16 @@
         <p class="mt-1 text-sm text-gray-500">Create a new scholar record.</p>
       </a>
     <?php endif; ?>
-
+      <!-- 
     <a href="<?= site_url('scholars') ?>" class="group rounded-2xl bg-white ring-1 ring-gray-200 p-5 hover:shadow-lg transition">
       <div class="flex items-center justify-between">
         <h2 class="text-base font-semibold">Manage Scholars</h2>
         <span class="text-indigo-600 group-hover:translate-x-0.5 transition">→</span>
       </div>
       <p class="mt-1 text-sm text-gray-500">View, edit, and delete scholar records.</p>
-    </a>
+    </a> -->
   </section>
-
+      
   <section class="mt-6">
     <h2 class="text-xl font-semibold">Scholar List</h2>
     <div class="overflow-hidden bg-white shadow rounded-lg">

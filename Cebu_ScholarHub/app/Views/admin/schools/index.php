@@ -41,6 +41,7 @@
                            class="text-red-600 hover:underline">
                             Delete
                         </a> 
+                        
                     </td>
                 </tr>
             <?php endforeach; ?>
