@@ -8,7 +8,7 @@
     <p class="text-sm text-gray-500">Create a billing record for a scholar</p>
   </div>
 
-  <form method="post" action="<?= site_url('bills/store') ?>"
+  <form method="post" action="<?= site_url('school/billing/store') ?>"
         class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm space-y-4">
     <?= csrf_field() ?>
 
@@ -18,7 +18,7 @@
               class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
         <option value="">Select Scholar</option>
         <?php foreach ($scholars as $s): ?>
-          <option value="<?= $s['id'] ?>"><?= esc($s['scholar_name']) ?></option>
+          <option value="<?= $s['id'] ?>"> <?= esc($s['first_name'] . ' ' . $s['last_name']) ?></option>
         <?php endforeach; ?>
       </select>
     </div>
@@ -50,7 +50,7 @@
     </div>
 
     <div class="flex justify-end gap-3 pt-4">
-      <a href="<?= site_url('billing') ?>"
+      <a href="<?= site_url('school/billing') ?>"
          class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
         Cancel
       </a>

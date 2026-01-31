@@ -33,7 +33,7 @@
     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <h3 class="text-lg font-semibold text-gray-800 mb-4">Post Payment</h3>
 
-      <form method="post" action="<?= site_url('payments/store') ?>" class="space-y-4">
+      <form method="post" action="<?= site_url('school/payments/store') ?>" class="space-y-4">
         <?= csrf_field() ?>
         <input type="hidden" name="bill_id" value="<?= $bill['id'] ?>">
 

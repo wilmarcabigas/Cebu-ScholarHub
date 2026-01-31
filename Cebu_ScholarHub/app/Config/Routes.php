@@ -52,8 +52,13 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('scholars/update/(:num)', 'ScholarController::update/$1');
     $routes->get('scholars/delete/(:num)', 'ScholarController::delete/$1');
     
-    // Other school routes
+    
     $routes->get('billing', 'School\BillingController::index');
+    $routes->get('billing/create', 'School\BillingController::create');
+    $routes->post('billing/store', 'School\BillingController::store');
+    $routes->get('billing/view/(:num)', 'School\BillingController::view/$1');
+    $routes->post('payments/store', 'PaymentController::store');
+    // Other school routes
     $routes->get('requirements',  'School\RequirementsController::index');
     $routes->get('reports', 'School\ReportsController::index');
 });

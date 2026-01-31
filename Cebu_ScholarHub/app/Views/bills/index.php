@@ -9,7 +9,7 @@
   </div>
 
   <?php if (in_array(auth_user()['role'], ['school_admin','school_staff'])): ?>
-    <a href="<?= site_url('bills/create') ?>"
+    <a href="<?= site_url('school/billing/create') ?>"
        class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
       + Post Billing
     </a>
@@ -49,18 +49,19 @@
           </td>
           <td class="px-4 py-3 text-center">
             <?php
-              $badge = match($bill['status']) {
-                'paid' => 'bg-green-100 text-green-700',
-                'overdue' => 'bg-red-100 text-red-700',
-                default => 'bg-yellow-100 text-yellow-700'
-              };
+              $badge = match ($bill['status']) {
+    'paid'    => 'bg-green-100 text-green-700',
+    'partial' => 'bg-yellow-100 text-yellow-700',
+    'overdue' => 'bg-red-100 text-red-700',
+    default   => 'bg-gray-100 text-gray-500',
+};
             ?>
             <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold <?= $badge ?>">
               <?= strtoupper($bill['status']) ?>
             </span>
           </td>
           <td class="px-4 py-3 text-right">
-            <a href="<?= site_url('bills/view/'.$bill['id']) ?>"
+            <a href="<?= site_url('school/billing/view/'.$bill['id']) ?>"
                class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
               View
             </a>
