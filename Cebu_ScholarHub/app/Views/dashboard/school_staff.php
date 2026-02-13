@@ -17,20 +17,20 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Active Scholars</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">78</div>
-            <div class="mt-3 text-xs text-gray-500">Current semester</div>
+    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">78</div>
+            <div class="mt-3 text-xs text-gray-500">Current semester</div>  -->
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Pending Bills</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">12</div>
-            <div class="mt-3 text-xs text-yellow-600">Awaiting approval</div>
+    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">12</div>
+            <div class="mt-3 text-xs text-yellow-600">Awaiting approval</div> -->
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Requirements Due</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">5</div>
-            <div class="mt-3 text-xs text-red-600">Need attention</div>
+    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">5</div>
+            <div class="mt-3 text-xs text-red-600">Need attention</div> -->
         </div>
     </div>
 
@@ -69,11 +69,11 @@
                 <?php foreach(range(1, 4) as $i): ?>
                 <div class="px-5 py-4">
                     <div class="flex items-center justify-between">
-                        <div>
+                    <!--    <div>
                             <p class="text-sm text-gray-900">Update scholar grades</p>
                             <p class="text-xs text-gray-500 mt-0.5">For Juan Dela Cruz</p>
                         </div>
-                        <span class="text-xs text-red-600">Due today</span>
+                        <span class="text-xs text-red-600">Due today</span> -->
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -94,10 +94,10 @@
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
                         </div>
-                        <div>
+                    <!--    <div>
                             <p class="text-sm text-gray-900">Billing approved for Maria Santos</p>
-                            <p class="text-xs text-gray-500 mt-0.5">2 hours ago</p>
-                        </div>
+                            <p class="text-xs text-gray-500 mt-0.5">2 hours ago</p> 
+                        </div>  -->
                     </div>
                 </div>
                 <?php endforeach; ?>
