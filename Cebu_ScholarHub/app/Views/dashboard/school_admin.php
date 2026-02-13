@@ -26,26 +26,26 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Active Scholars</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">156</div>
-            <div class="mt-3 text-xs text-green-600">↑ 5 new this semester</div>
+    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">156</div>
+            <div class="mt-3 text-xs text-green-600">↑ 5 new this semester</div>    -->
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Total Billing</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">₱780K</div>
-            <div class="mt-3 text-xs text-gray-500">For current semester</div>
+    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">₱780K</div>
+            <div class="mt-3 text-xs text-gray-500">For current semester</div> -->
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Pending Approval</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">12</div>
-            <div class="mt-3 text-xs text-red-600">Need attention</div>
+    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">12</div>
+            <div class="mt-3 text-xs text-red-600">Need attention</div> -->
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Messages</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">8</div>
-            <div class="mt-3 text-xs text-indigo-600">3 unread</div>
+    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">8</div>
+            <div class="mt-3 text-xs text-indigo-600">3 unread</div>    -->
         </div>
     </div>
 
@@ -82,11 +82,11 @@
             <?php foreach(range(1, 5) as $i): ?>
             <div class="px-5 py-4">
                 <div class="flex items-center justify-between">
-                    <div>
+                <!--    <div>
                         <p class="text-sm text-gray-900">Billing posted for <span class="font-medium">2nd Semester 2023</span></p>
                         <p class="text-xs text-gray-500 mt-0.5">₱45,000 for 15 scholars</p>
                     </div>
-                    <span class="text-xs text-gray-500">1 hour ago</span>
+                    <span class="text-xs text-gray-500">1 hour ago</span>   -->
                 </div>
             </div>
             <?php endforeach; ?>
