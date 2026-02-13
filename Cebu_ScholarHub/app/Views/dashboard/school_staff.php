@@ -26,7 +26,12 @@
             <div class="mt-1 text-3xl font-semibold text-gray-900">12</div>
             <div class="mt-3 text-xs text-yellow-600">Awaiting approval</div>
         </div>
-        
+        <a href="<?= site_url('messages') ?>"
+           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
+            <h3 class="font-semibold text-gray-900">message</h3>
+            <p class="mt-1 text-sm text-gray-500">Message partner schools </p>
+            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View messages →</span>
+        </a>
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Requirements Due</div>
             <div class="mt-1 text-3xl font-semibold text-gray-900">5</div>
