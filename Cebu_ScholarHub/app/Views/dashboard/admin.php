@@ -56,7 +56,7 @@
             <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View users →</span>
         </a>
 
-    <a href="/admin/schools"
+    <a href="<?= site_url('admin/schools') ?>" 
            class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
             <h3 class="font-semibold text-gray-900">Partner Schools</h3>
             <p class="mt-1 text-sm text-gray-500">Manage school partnerships and access.</p>
@@ -88,7 +88,7 @@
                 <!--    <div>
                         <p class="text-sm text-gray-900">New scholar added by <span class="font-medium">USC Admin</span></p>
                         <p class="text-xs text-gray-500 mt-0.5">Juan Dela Cruz (BSCS) enrolled for AY 2023-2024</p>
-                    </div>  
+                    </div>
                     <span class="text-xs text-gray-500">2 hours ago</span>  -->
                 </div>
             </div>
