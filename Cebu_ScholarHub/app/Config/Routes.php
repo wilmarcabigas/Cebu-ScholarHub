@@ -52,7 +52,6 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('scholars/update/(:num)', 'ScholarController::update/$1');
     $routes->get('scholars/delete/(:num)', 'ScholarController::delete/$1');
     
-    
     $routes->get('billing', 'School\BillingController::index');
     $routes->get('billing/create', 'School\BillingController::create');
     $routes->post('billing/store', 'School\BillingController::store');
@@ -70,7 +69,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('store', 'ScholarController::store');
     $routes->get('edit/(:num)', 'ScholarController::edit/$1');
     $routes->put('update/(:num)', 'ScholarController::update/$1');
-    $routes->get('delete/(:num)', 'ScholarController::delete/$1');
+    $routes->get('delete/(:num)', 'ScholarController::delete/$1');   
+
+    $routes->get('import', 'ScholarController::importForm');
+    $routes->post('import', 'ScholarController::importExcel');
 });
 });
 
