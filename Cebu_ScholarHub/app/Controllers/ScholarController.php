@@ -31,7 +31,9 @@ class ScholarController extends BaseController
         $data = [
             'title'    => 'Manage Scholars',
             'scholars' => $scholars->findAll(),
-            'user'     => $authUser
+            'user'     => $authUser,
+            'show_back' => true,
+            'back_url'  => site_url('dashboard')
         ];
 
         return view('scholars/index', $data);
@@ -44,7 +46,10 @@ class ScholarController extends BaseController
         return view('scholars/create', [
             'title'   => 'Add New Scholar',
             'schools' => $this->schoolModel->findAll(),
-            'user'    => $authUser
+            'user'    => $authUser,
+            'show_back' => true,
+            'back_url'  => site_url('scholars')
+            
         ]);
     }
 
@@ -99,7 +104,9 @@ class ScholarController extends BaseController
             'title'   => 'Edit Scholar',
             'scholar' => $scholar,
             'schools' => $this->schoolModel->findAll(),
-            'user'    => $authUser
+            'user'    => $authUser,
+            'show_back' => true,
+            'back_url'  => site_url('scholars')
         ]);
     }
 

@@ -27,6 +27,7 @@ class Dashboard extends BaseController
         $data = [
             'title' => ucfirst($user['role']) . ' Dashboard',
             'user' => $user
+            
         ];
 
         // Add school data for school roles

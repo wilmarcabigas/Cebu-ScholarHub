@@ -20,9 +20,10 @@
     </ul>
   </div>
 <?php endif; ?>
-  <form action="/scholars/update/<?= $scholar['id'] ?>" method="post" class="space-y-4">
+  <form action="<?= base_url('school/scholars/update/' . $scholar['id']) ?>" method="post">
+
     <?= csrf_field() ?>
-    <input type="hidden" name="_method" value="PUT">
+    
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div class="form-group">
         <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>

@@ -17,7 +17,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
 
     // Admin routes
-    $routes->group('admin', ['filter' => 'role:admin'], static function ($routes) {
+    $routes->group('admin', ['filter' => 'role:admin,staff'], static function ($routes) {
         $routes->get('users', 'UsersController::index');
         $routes->get('users/create', 'UsersController::create');
         $routes->post('users/create', 'UsersController::create');
@@ -26,22 +26,6 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('users/delete/(:num)', 'UsersController::delete/$1');
         
         $routes->get('reports', 'Admin\ReportsController::index');
-
-        
-        
-    });
-
-    // Staff routes
-    $routes->group('staff', ['filter' => 'role:staff'], static function ($routes) {
-        $routes->get('reviews', 'Staff\ReviewsController::index');
-        $routes->get('applications', 'Staff\ApplicationsController::index');
-        
-    });
-
-     // Staff routes
-    $routes->group('manage', ['filter' => 'role:staff, admin'], static function ($routes) {
-        $routes->get('reviews', 'Staff\ReviewsController::index');
-        $routes->get('applications', 'Staff\ApplicationsController::index');
 
         $routes->get('schools', 'Admin\Schools::index');
         $routes->get('schools/create', 'Admin\Schools::create');
@@ -52,8 +36,14 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         
     });
 
+    // Staff routes
+    $routes->group('staff', ['filter' => 'role:staff'], static function ($routes) {
+        $routes->get('reviews', 'Staff\ReviewsController::index');
+        $routes->get('applications', 'Staff\ApplicationsController::index');
+    });
+
     // School Admin routes
-    $routes->group('school', ['filter' => 'role:school_admin,school_staff'], function($routes) {
+    $routes->group('school', ['filter' => 'role:school_admin,school_staff,staff'], function($routes) {
     // Scholar routes
     $routes->get('scholars', 'ScholarController::index');
     $routes->get('scholars/create', 'ScholarController::create');
@@ -62,11 +52,9 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('scholars/update/(:num)', 'ScholarController::update/$1');
     $routes->get('scholars/delete/(:num)', 'ScholarController::delete/$1');
     
-    
-
     // Other school routes
     $routes->get('billing', 'School\BillingController::index');
-    $routes->get('requirements', 'School\RequirementsController::index');
+    $routes->get('requirements',  'School\RequirementsController::index');
     $routes->get('reports', 'School\ReportsController::index');
 });
 
@@ -76,7 +64,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('create', 'ScholarController::create');
     $routes->post('store', 'ScholarController::store');
     $routes->get('edit/(:num)', 'ScholarController::edit/$1');
-    $routes->put('update/(:num)', 'ScholarController::update/$1');
+    $routes->post('update/(:num)', 'ScholarController::update/$1');
     $routes->get('delete/(:num)', 'ScholarController::delete/$1');
 });
 });

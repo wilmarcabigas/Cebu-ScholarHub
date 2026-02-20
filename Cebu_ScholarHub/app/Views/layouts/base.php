@@ -40,26 +40,29 @@
   </nav>
 
   <!-- Role-based Navigation -->
-  <?php if (auth_user()): ?>
+   
+  <?php
+/*
+if (auth_user()):
+?>
     <nav class="bg-gray-800">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
                     <div class="hidden md:block">
                         <div class="flex items-baseline space-x-4">
-                            <?php switch(auth_user()['role']): 
+                            <?php switch(auth_user()['role']):
                                 case 'admin': ?>
                                     <a href="<?= site_url('admin/users') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Users</a>
                                     <a href="<?= site_url('admin/schools') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Schools</a>
-                                     <!-- <a href="<?= site_url('admin/reports') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Reports</a> -->
                                     <?php break; ?>
 
-                                   <?php case 'staff': ?>
+                                <?php case 'staff': ?>
                                     <a href="<?= site_url('admin/schools') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Schools</a>
                                     <a href="<?= site_url('admin/reports') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Reports</a>
                                     <?php break; ?>
-                                
-                                <?php case 'school_admin': 
+
+                                <?php case 'school_admin':
                                 case 'school_staff': ?>
                                     <a href="<?= site_url('school/scholars') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Scholars</a>
                                     <a href="<?= site_url('school/billing') ?>" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Billing</a>
@@ -77,6 +80,34 @@
             </div>
         </div>
     </nav>
+<?php
+endif;
+*/
+?>
+
+
+
+
+  <!-- Back Button Row (OPTIONAL) -->
+  <?php
+    $showBack = $show_back ?? false;
+    $backUrl  = $back_url ?? null;
+  ?>
+  <?php if ($showBack): ?>
+    <div class="container mt-4">
+      <?php if ($backUrl): ?>
+        <a href="<?= esc($backUrl) ?>"
+           class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+          ← Back
+        </a>
+      <?php else: ?>
+        <button type="button"
+                onclick="goBack()"
+                class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+          ← Back
+        </button>
+      <?php endif; ?>
+    </div>
   <?php endif; ?>
 
   <!-- Page -->
@@ -90,5 +121,23 @@
       © <?= date('Y') ?> Cebu City Scholars Office • All rights reserved.
     </div>
   </footer>
+
+  <!-- Back Button Script -->
+  <script>
+    function goBack() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "<?= site_url('dashboard') ?>";
+      }
+    }
+  </script>
+
+  <!-- Tailwind helper -->
+  <style>
+    .nav-link {
+      @apply text-gray-300 hover:text-white px-3 py-2 rounded-md font-medium;
+    }
+  </style>
 </body>
 </html>
