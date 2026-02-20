@@ -33,6 +33,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('schools/edit/(:num)', 'Admin\Schools::edit/$1');
         $routes->post('schools/update/(:num)', 'Admin\Schools::update/$1');
         $routes->get('schools/delete/(:num)', 'Admin\Schools::delete/$1');
+      
         
     });
 
@@ -61,6 +62,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     // Other school routes
     $routes->get('requirements',  'School\RequirementsController::index');
     $routes->get('reports', 'School\ReportsController::index');
+    
 });
 
     // Scholar routes

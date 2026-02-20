@@ -17,49 +17,81 @@ class Messages extends BaseController
         $this->userModel    = new UserModel();
     }
 
-    private function getMyId()
-{
-    $authUser = session()->get('auth_user');
-    return $authUser['id'] ?? null;
-}
+    private function getAuthUser()
+    {
+        return session()->get('auth_user');
+    }
 
     public function index()
     {
-        $myId = $this->getMyId();
-    
-        $data['users'] = $this->userModel
-            ->where('id !=', $myId)
-            ->findAll();
+        $authUser = $this->getAuthUser();
+
+        if (!$authUser) {
+            return redirect()->to('login');
+        }
+
+        $myId   = $authUser['id'];
+        $myRole = $authUser['role'];
+
+        // ✅ If Cebu Admin or Cebu Staff
+        if (in_array($myRole, ['admin', 'staff'])) {
+
+            $data['users'] = $this->userModel
+                ->where('id !=', $myId)
+                ->whereIn('role', ['school_admin', 'school_staff'])
+                ->where('deleted_at', null) // ignore soft deleted
+                ->findAll();
+        }
+
+        // ✅ If School Admin or School Staff
+        elseif (in_array($myRole, ['school_admin', 'school_staff'])) {
+
+            $data['users'] = $this->userModel
+                ->where('id !=', $myId)
+                ->whereIn('role', ['admin', 'staff'])
+                ->where('deleted_at', null)
+                ->findAll();
+        }
+
+        // ❌ Scholars cannot message
+        else {
+            $data['users'] = [];
+        }
 
         return view('messages/select_user', $data);
     }
 
-   public function chat($userId)
-{
-    $myId = $this->getMyId();
+    public function chat($userId)
+    {
+        $authUser = $this->getAuthUser();
 
-    if (!$myId) {
-        return redirect()->to('login');
+        if (!$authUser) {
+            return redirect()->to('login');
+        }
+
+        $myId = $authUser['id'];
+
+        $messages = $this->messageModel->getChat($myId, $userId) ?? [];
+
+        return view('messages/chat', [
+            'messages'  => $messages,
+            'otherUser' => $this->userModel
+                                ->where('deleted_at', null)
+                                ->find($userId),
+            'myId'      => $myId,
+            'other_id'  => $userId,
+        ]);
     }
-
-    $messages = $this->messageModel->getChat($myId, $userId) ?? [];
-
-    return view('messages/chat', [
-        'messages'  => $messages,
-        'otherUser' => $this->userModel->find($userId),
-        'myId'      => $myId,
-        'other_id'  => $userId,
-    ]);
-}
-
 
     public function send()
     {
-        $myId = $this->getMyId();
+        $authUser = $this->getAuthUser();
 
-        if (!$myId) {
+        if (!$authUser) {
             return redirect()->to('login');
         }
+
+        $myId = $authUser['id'];
 
         $this->messageModel->insert([
             'sender_id'   => $myId,
