@@ -7,7 +7,7 @@
         <p class="text-sm text-gray-500">Update school information</p>
     </div>
 
-    <form method="post" action="/admin/schools/update/<?= $school['id'] ?>"
+    <form method="post" action="/manage/schools/update/<?= $school['id'] ?>"
           class="bg-white rounded-lg shadow p-6 space-y-5">
         <?= csrf_field() ?>
 
@@ -57,7 +57,7 @@
         </div>
 
         <div class="flex justify-end space-x-3 pt-4">
-            <a href="/admin/schools"
+            <a href="/manage/schools"
                class="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
                 Cancel
             </a>

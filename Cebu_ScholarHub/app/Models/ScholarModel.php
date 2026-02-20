@@ -31,6 +31,7 @@ class ScholarModel extends Model
     
     // Validation rules
     protected $validationRules = [
+        'school_id'   => 'required|is_natural_no_zero',
         'first_name'  => 'required|min_length[3]|max_length[100]',
         'last_name'   => 'required|min_length[3]|max_length[100]',
         'gender'      => 'required|in_list[male,female,other]',
@@ -40,6 +41,8 @@ class ScholarModel extends Model
         'date_of_birth' => 'required|valid_date',
         'email' => 'required|valid_email',
     ];
+
+    
 
     
     // Custom error messages
