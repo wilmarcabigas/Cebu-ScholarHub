@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Models\ScholarModel;
 use App\Models\SchoolModel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class ScholarController extends BaseController
 {
@@ -13,7 +15,7 @@ class ScholarController extends BaseController
     public function __construct()
     {
         $this->scholarModel = new ScholarModel();
-        $this->schoolModel = new SchoolModel();
+        $this->schoolModel  = new SchoolModel();
     }
 
     public function index()
@@ -69,16 +71,16 @@ class ScholarController extends BaseController
             : $this->request->getPost('school_id');
 
         $data = [
-            'school_id'    => $schoolId,
-            'first_name'   => $this->request->getPost('first_name'),
-            'middle_name'  => $this->request->getPost('middle_name'),
-            'last_name'    => $this->request->getPost('last_name'),
-            'gender'       => $this->request->getPost('gender'),
-            'course'       => $this->request->getPost('course'),
-            'year_level'   => $this->request->getPost('year_level'),
-            'status'       => $this->request->getPost('status'),
-            'date_of_birth'=> $this->request->getPost('date_of_birth'),
-            'email'        => $this->request->getPost('email'),
+            'school_id'     => $schoolId,
+            'first_name'    => $this->request->getPost('first_name'),
+            'middle_name'   => $this->request->getPost('middle_name'),
+            'last_name'     => $this->request->getPost('last_name'),
+            'gender'        => $this->request->getPost('gender'),
+            'course'        => $this->request->getPost('course'),
+            'year_level'    => $this->request->getPost('year_level'),
+            'status'        => $this->request->getPost('status'),
+            'date_of_birth' => $this->request->getPost('date_of_birth'),
+            'email'         => $this->request->getPost('email'),
         ];
 
         if (!$this->scholarModel->insert($data)) {
@@ -108,12 +110,12 @@ class ScholarController extends BaseController
         }
 
         return view('scholars/edit', [
-            'title'   => 'Edit Scholar',
-            'scholar' => $scholar,
-            'schools' => $this->schoolModel->findAll(),
-            'user'    => $authUser,
-            'show_back' => true,
-            'back_url'  => site_url('scholars')
+            'title'      => 'Edit Scholar',
+            'scholar'    => $scholar,
+            'schools'    => $this->schoolModel->findAll(),
+            'user'       => $authUser,
+            'show_back'  => true,
+            'back_url'   => site_url('scholars')
         ]);
     }
 
@@ -136,7 +138,7 @@ class ScholarController extends BaseController
         return redirect()->to('/scholars')
             ->with('success', 'Scholar updated successfully');
     }
-
+       
     public function delete($id)
     {
         $this->scholarModel->delete($id);

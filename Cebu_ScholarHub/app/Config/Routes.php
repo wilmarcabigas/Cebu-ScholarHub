@@ -53,7 +53,6 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('scholars/update/(:num)', 'ScholarController::update/$1');
     $routes->get('scholars/delete/(:num)', 'ScholarController::delete/$1');
     
-    
     $routes->get('billing', 'School\BillingController::index');
     $routes->get('billing/create', 'School\BillingController::create');
     $routes->post('billing/store', 'School\BillingController::store');
@@ -71,19 +70,22 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('create', 'ScholarController::create');
     $routes->post('store', 'ScholarController::store');
     $routes->get('edit/(:num)', 'ScholarController::edit/$1');
-    $routes->post('update/(:num)', 'ScholarController::update/$1');
+
+
+    $routes->put('update/(:num)', 'ScholarController::update/$1');
     $routes->get('delete/(:num)', 'ScholarController::delete/$1');
 
     
-
-
+    $routes->get('import', 'ScholarController::importForm');
+    $routes->post('import', 'ScholarController::importExcel');
 });
-   $routes->group('messages', ['filter' => 'role:admin,staff,school_admin,school_staff'], static function($routes) {
+
+
+       $routes->group('messages', ['filter' => 'role:admin,staff,school_admin,school_staff'], static function($routes) {
     $routes->get('', 'Messages::index');
     $routes->get('chat/(:num)', 'Messages::chat/$1');
     $routes->post('send', 'Messages::send');
 });
-
 });
 
 
