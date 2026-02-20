@@ -146,4 +146,122 @@ class ScholarController extends BaseController
         return redirect()->to(site_url('scholars'))
             ->with('message', 'Scholar deleted successfully');
     }
+    public function importForm()
+    {
+        return view('scholars/import', [
+            'title' => 'Import Scholars from Excel',
+            'user'  => session()->get('auth_user'),
+            'show_back' => true,
+            'back_url' => site_url('scholars/create')
+        ]);
+    }
+
+    public function importExcel()
+    {
+        $file = $this->request->getFile('excel_file');
+
+        if (!$file->isValid()) {
+            return "Invalid file.";
+        }
+
+        $spreadsheet = IOFactory::load($file->getTempName());
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
+
+        if (count($rows) < 2) {
+            return "Excel file is empty.";
+        }
+
+        $header = array_map('trim', $rows[0]);
+
+        $model = new ScholarModel();
+        $schoolModel = new SchoolModel();
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        for ($i = 1; $i < count($rows); $i++) {
+
+            $rowData = [];
+            $row = $rows[$i];
+
+            foreach ($header as $key => $column) {
+                if (empty($column)) continue;
+                $rowData[$column] = trim($row[$key]);
+            }
+
+            // ===== SCHOOL NAME TO ID CONVERSION =====
+            if (!empty($rowData['school_name'])) {
+
+                $school = $schoolModel
+                    ->where('name', $rowData['school_name'])
+                    ->first();
+
+                if (!$school) {
+                    $newId = $schoolModel->insert([
+                        'name' => $rowData['school_name']
+                    ]);
+                    $rowData['school_id'] = $newId;
+                } else {
+                    $rowData['school_id'] = $school['id'];
+                }
+
+                $rowData['school_id'] = $school['id'];
+                unset($rowData['school_name']);
+            } else {
+                continue;
+            }
+
+            // ===== DATE FORMAT FIX =====
+            if (!empty($rowData['date_of_birth'])) {
+
+                if (is_numeric($rowData['date_of_birth'])) {
+                    $rowData['date_of_birth'] = date(
+                        'Y-m-d',
+                        Date::excelToTimestamp($rowData['date_of_birth'])
+                    );
+                } else {
+                    $rowData['date_of_birth'] = date(
+                        'Y-m-d',
+                        strtotime($rowData['date_of_birth'])
+                    );
+                }
+            }
+
+            // ===== REQUIRED FIELDS CHECK =====
+            if (
+                empty($rowData['school_id']) ||
+                empty($rowData['first_name']) ||
+                empty($rowData['last_name']) ||
+                empty($rowData['gender']) ||
+                empty($rowData['course']) ||
+                empty($rowData['year_level']) ||
+                empty($rowData['status']) ||
+                empty($rowData['date_of_birth'])
+            ) {
+                continue;
+            }
+
+            // ===== DUPLICATE EMAIL CHECK =====
+            if (!empty($rowData['email'])) {
+
+                $existing = $model->where('email', $rowData['email'])->first();
+
+                if ($existing) {
+                    $model->update($existing['id'], $rowData);
+                    continue;
+                }
+            }
+
+            $model->insert($rowData);
+        }
+
+        $db->transComplete();
+
+        
+        return redirect()->to(site_url('scholars'))
+            ->with('message', 'Scholars imported successfully!');
+    }
 }
+
+
