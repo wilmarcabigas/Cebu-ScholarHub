@@ -19,21 +19,29 @@ class ScholarController extends BaseController
     public function index()
     {
         $authUser = session()->get('auth_user');
+        $selectedSchool = $this->request->getGet('school_id'); // get school filter from dropdown
 
         $scholars = $this->scholarModel
             ->select('scholars.*, schools.name as school_name')
             ->join('schools', 'schools.id = scholars.school_id', 'left');
 
+        // If school staff/admin: only their school
         if (in_array($authUser['role'], ['school_admin', 'school_staff'])) {
             $scholars->where('scholars.school_id', $authUser['school_id']);
         }
+        // Admin/staff: can filter by school from dropdown
+        elseif (!empty($selectedSchool)) {
+            $scholars->where('scholars.school_id', $selectedSchool);
+        }
 
         $data = [
-            'title'    => 'Manage Scholars',
-            'scholars' => $scholars->findAll(),
-            'user'     => $authUser,
-            'show_back' => true,
-            'back_url'  => site_url('dashboard')
+            'title'          => 'Manage Scholars',
+            'scholars'       => $scholars->findAll(),
+            'schools'        => $this->schoolModel->findAll(),
+            'selectedSchool' => $selectedSchool,
+            'user'           => $authUser,
+            'show_back'      => true,
+            'back_url'       => site_url('dashboard')
         ];
 
         return view('scholars/index', $data);
@@ -49,7 +57,6 @@ class ScholarController extends BaseController
             'user'    => $authUser,
             'show_back' => true,
             'back_url'  => site_url('scholars')
-            
         ]);
     }
 
@@ -110,27 +117,25 @@ class ScholarController extends BaseController
         ]);
     }
 
-   public function update($id)
-{
-    $model = new ScholarModel();
+    public function update($id)
+    {
+        $model = new ScholarModel();
 
-    if (! $this->validate([
-        'first_name' => 'required',
-        'last_name'  => 'required',
-        'email'      => 'required|valid_email',
-    ])) {
-        return redirect()->back()
-            ->withInput()
-            ->with('errors', $this->validator->getErrors());
+        if (! $this->validate([
+            'first_name' => 'required',
+            'last_name'  => 'required',
+            'email'      => 'required|valid_email',
+        ])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', $this->validator->getErrors());
+        }
+
+        $model->update($id, $this->request->getPost());
+
+        return redirect()->to('/scholars')
+            ->with('success', 'Scholar updated successfully');
     }
-
-    $model->update($id, $this->request->getPost());
-
-    return redirect()->to('/scholars')
-        ->with('success', 'Scholar updated successfully');
-}
-
-    
 
     public function delete($id)
     {

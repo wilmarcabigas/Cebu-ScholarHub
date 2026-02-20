@@ -4,37 +4,44 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\SchoolModel;
+use App\Models\ScholarModel;
 
 class Schools extends BaseController
 {
     protected $schoolModel;
+    protected $scholarModel;
 
     public function __construct()
     {
-        $this->schoolModel = new SchoolModel();
+        $this->schoolModel = new SchoolModel(); 
+        $this->scholarModel = new ScholarModel(); 
+     
     }
 
+    // List all schools
     public function index()
     {
-
         $data = [
-        'title' => 'Manage schools',
-        'schools' => $this->schoolModel->findAll(),
-        'show_back' => true,
-        'back_url'  => site_url('dashboard'),
-    ];
+            'title' => 'Manage schools',
+            'schools' => $this->schoolModel->findAll(), // fixed
+            'show_back' => true,
+            'back_url'  => site_url('dashboard'),
+        ];
+
         return view('admin/schools/index', $data);
     }
 
+    // Show form to create a school
     public function create()
     {
         return view('admin/schools/create', [
-        'show_back' => true,
-        'back_url'  => site_url('admin/schools'), // URL to go back to list page
-        'title'     => 'Add New School'          // Optional: for page title
-    ]);
+            'show_back' => true,
+            'back_url'  => site_url('admin/schools'),
+            'title'     => 'Add New School'
+        ]);
     }
 
+    // Store new school
     public function store()
     {
         $this->schoolModel->save([
@@ -49,23 +56,25 @@ class Schools extends BaseController
         return redirect()->to('/admin/schools')->with('success', 'School added successfully');
     }
 
+    // Show edit form
     public function edit($id)
-{
-    $school = $this->schoolModel->find($id);
+    {
+        $school = $this->schoolModel->find($id);
 
-    if (!$school) {
-        return redirect()->to(site_url('admin/schools'))
-            ->with('error', 'School not found');
+        if (!$school) {
+            return redirect()->to(site_url('admin/schools'))
+                ->with('error', 'School not found');
+        }
+
+        return view('admin/schools/edit', [
+            'title'     => 'Edit School',
+            'school'    => $school,
+            'show_back' => true,
+            'back_url'  => site_url('admin/schools'),
+        ]);
     }
 
-    return view('admin/schools/edit', [
-        'title'     => 'Edit School',
-        'school'    => $school,
-        'show_back' => true,
-        'back_url'  => site_url('admin/schools'), // Back to list
-    ]);
-}
-
+    // Update school
     public function update($id)
     {
         $this->schoolModel->update($id, [
@@ -80,11 +89,12 @@ class Schools extends BaseController
         return redirect()->to('/admin/schools')->with('success', 'School updated successfully');
     }
 
+    // Delete school
     public function delete($id)
     {
-        // Soft delete
         $this->schoolModel->delete($id);
 
         return redirect()->to('/admin/schools')->with('success', 'School deleted successfully');
     }
+
 }

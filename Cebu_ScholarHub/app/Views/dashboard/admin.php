@@ -4,6 +4,7 @@
 
 <div class="space-y-6">
     <!-- Header -->
+     
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
@@ -55,19 +56,25 @@
             <p class="mt-1 text-sm text-gray-500">Add, edit or deactivate system users.</p>
             <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View users →</span>
         </a>
-
-    <!--<a href="/admin/schools"
+        <a href="<?= site_url('messages') ?>"
+           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
+            <h3 class="font-semibold text-gray-900">message</h3>
+            <p class="mt-1 text-sm text-gray-500">Message partner schools </p>
+            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View messages →</span>
+        </a>
+    <a href="/admin/schools"
            class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
             <h3 class="font-semibold text-gray-900">Partner Schools</h3>
             <p class="mt-1 text-sm text-gray-500">Manage school partnerships and access.</p>
             <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View schools →</span>
-        </a> -->
+        </a> 
         <a href="<?= site_url('scholars') ?>" 
             class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
             <h3 class="font-semibold text-gray-900">Scholar Management</h3>
             <p class="mt-1 text-sm text-gray-500">Manage all scholar records.</p>
             <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View scholars →</span>
         </a>
+        
         <!--  <a href="<?= site_url('admin/reports') ?>" 
            class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
             <h3 class="font-semibold text-gray-900">Reports</h3>

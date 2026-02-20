@@ -51,6 +51,15 @@
 
     <!-- Quick Actions -->
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        
+    <a href="<?= site_url('messages') ?>"
+           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
+            <h3 class="font-semibold text-gray-900">message</h3>
+            <p class="mt-1 text-sm text-gray-500">Message partner schools </p>
+            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View messages →</span>
+        </a>
+
+
         <a href="<?= site_url('scholars') ?>" 
             class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
              <h3 class="font-semibold text-gray-900">School Scholars</h3>
@@ -58,7 +67,7 @@
             <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View scholars →</span>
         </a>    
 
-        <a href="<?= site_url('bills') ?>"
+        <a href="<?= site_url('school/billing') ?>"
            class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
             <h3 class="font-semibold text-gray-900">Billing Records</h3>
             <p class="mt-1 text-sm text-gray-500">Manage tuition and other fees.</p>

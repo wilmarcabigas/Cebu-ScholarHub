@@ -33,6 +33,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('schools/edit/(:num)', 'Admin\Schools::edit/$1');
         $routes->post('schools/update/(:num)', 'Admin\Schools::update/$1');
         $routes->get('schools/delete/(:num)', 'Admin\Schools::delete/$1');
+      
         
     });
 
@@ -52,10 +53,16 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('scholars/update/(:num)', 'ScholarController::update/$1');
     $routes->get('scholars/delete/(:num)', 'ScholarController::delete/$1');
     
-    // Other school routes
+    
     $routes->get('billing', 'School\BillingController::index');
+    $routes->get('billing/create', 'School\BillingController::create');
+    $routes->post('billing/store', 'School\BillingController::store');
+    $routes->get('billing/view/(:num)', 'School\BillingController::view/$1');
+    $routes->post('payments/store', 'PaymentController::store');
+    // Other school routes
     $routes->get('requirements',  'School\RequirementsController::index');
     $routes->get('reports', 'School\ReportsController::index');
+    
 });
 
     // Scholar routes
@@ -66,13 +73,32 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('edit/(:num)', 'ScholarController::edit/$1');
     $routes->post('update/(:num)', 'ScholarController::update/$1');
     $routes->get('delete/(:num)', 'ScholarController::delete/$1');
+
+    
+
+
 });
+   $routes->group('messages', ['filter' => 'role:admin,staff,school_admin,school_staff'], static function($routes) {
+    $routes->get('', 'Messages::index');
+    $routes->get('chat/(:num)', 'Messages::chat/$1');
+    $routes->post('send', 'Messages::send');
 });
 
+});
+
+
+
+
 // Auth routes
+
 $routes->group('', ['filter' => 'guest'], static function ($routes) {
     $routes->get('login', 'AuthController::login');
     $routes->post('login', 'AuthController::attempt');
+
+    
 });
 
+
 $routes->get('logout', 'AuthController::logout', ['filter' => 'auth']);
+
+

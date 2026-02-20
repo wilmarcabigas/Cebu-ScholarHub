@@ -12,7 +12,6 @@
         + Add School
     </a>
 </div>
-
 <div class="bg-white rounded-lg shadow overflow-hidden">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
@@ -44,7 +43,6 @@
                     </td>
                 </tr>
             <?php endforeach; ?>
-
             <?php if (empty($schools)): ?>
                 <tr>
                     <td colspan="5" class="px-6 py-6 text-center text-sm text-gray-500">
