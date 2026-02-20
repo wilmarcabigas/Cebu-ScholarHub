@@ -19,6 +19,8 @@ class SchoolModel extends Model
     ];
 
     protected $useTimestamps = true;
+    protected $createdField  = 'created_at';
+    protected $updatedField  = 'updated_at';
 
     // Because you have deleted_at
     protected $useSoftDeletes = true;
