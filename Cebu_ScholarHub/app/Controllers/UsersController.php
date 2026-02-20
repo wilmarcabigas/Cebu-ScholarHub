@@ -20,23 +20,54 @@ class UsersController extends BaseController
     /* ==============================
        USER LIST (ADMIN ONLY)
     ============================== */
-    public function index()
-    {
-        $authUser = session()->get('auth_user');
+public function index()
+{
+    $authUser = session()->get('auth_user');
 
-        if (!$authUser || $authUser['role'] !== 'admin') {
-            return redirect()->to('/')->with('error', 'Unauthorized access');
-        }
-
-        $data = [
-            'title'     => 'Manage Users',
-            'users'     => $this->userModel->getUsersWithSchool(),
-            'show_back' => true,
-            'back_url'  => site_url('dashboard'),
-        ];
-
-        return view('admin/user_list', $data);
+    if (!$authUser || $authUser['role'] !== 'admin') {
+        return redirect()->to('/')->with('error', 'Unauthorized access');
     }
+
+    // Get filters
+    $search   = $this->request->getGet('search');
+    $role     = $this->request->getGet('role');
+    $sort     = $this->request->getGet('sort') ?? 'desc';
+
+    $builder = $this->userModel
+        ->select('users.*, schools.name as school_name')
+        ->join('schools', 'schools.id = users.school_id', 'left');
+
+    // 🔍 SEARCH
+    if ($search) {
+        $builder->groupStart()
+            ->like('email', $search)
+            ->orLike('full_name', $search)
+            ->groupEnd();
+    }
+
+    // 🎯 ROLE FILTER
+    if ($role) {
+        $builder->where('role', $role);
+    }
+
+    // 🔃 SORT BY CREATED DATE
+    $builder->orderBy('created_at', $sort);
+
+    $data = [
+        'title'     => 'Manage Users',
+        'users'     => $builder->findAll(),
+        'show_back' => true,
+        'back_url'  => site_url('dashboard'),
+        'filters' => [
+            'search' => $search,
+            'role'   => $role,
+            'sort'   => $sort
+        ]
+    ];
+
+    return view('admin/user_list', $data);
+}
+
 
     /* ==============================
        CREATE USER

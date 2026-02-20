@@ -14,17 +14,36 @@ class Schools extends BaseController
         $this->schoolModel = new SchoolModel();
     }
 
-    public function index()
-    {
+public function index()
+{
+    $search = $this->request->getGet('search');
+    $order  = $this->request->getGet('order') ?? 'desc';
 
-        $data = [
-        'title' => 'Manage schools',
-        'schools' => $this->schoolModel->findAll(),
-        'show_back' => true,
-        'back_url'  => site_url('dashboard'),
-    ];
-        return view('admin/schools/index', $data);
+    $builder = $this->schoolModel;
+
+    if (!empty($search)) {
+        $builder = $builder->groupStart()
+            ->like('name', $search)
+            ->orLike('code', $search)
+            ->orLike('contact_person', $search)
+            ->groupEnd();
     }
+
+    $schools = $builder
+        ->orderBy('created_at', $order)
+        ->findAll();
+
+    return view('admin/schools/index', [
+        'schools' => $schools,
+        'search' => $search,
+        'order' => $order,
+        'show_back' => true,
+        'back_url'  => site_url('dashboard') // Back to admin dashboard
+    ]);
+}
+
+
+
 
     public function create()
     {
