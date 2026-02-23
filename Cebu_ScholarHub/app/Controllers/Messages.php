@@ -58,7 +58,12 @@ class Messages extends BaseController
             $data['users'] = [];
         }
 
-        return view('messages/select_user', $data);
+        return view('messages/select_user', [
+            'title' => 'Messages',
+            'user'  => $authUser,
+            'show_back' => true,
+            'back_url'  => site_url('dashboard'),
+        ] + $data);
     }
 
     public function chat($userId)
@@ -80,6 +85,8 @@ class Messages extends BaseController
                                 ->find($userId),
             'myId'      => $myId,
             'other_id'  => $userId,
+            'show_back' => true, 
+            'back_url'  => site_url('messages'),
         ]);
     }
 
