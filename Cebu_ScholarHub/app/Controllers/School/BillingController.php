@@ -26,7 +26,12 @@ class BillingController extends BaseController
     ->orderBy('bills.created_at', 'DESC')
     ->findAll();
 
-        return view('bills/index', $data);
+        return view('bills/index', [
+            'title' => 'Manage Billing',
+            'bills' => $data['bills'],
+            'show_back' => true,
+            'back_url'  => site_url('dashboard')
+        ]);
     }
 
     public function create()
@@ -41,7 +46,11 @@ class BillingController extends BaseController
         $schoolId = auth_user()['school_id']; 
         $data['scholars'] = $scholarModel->getBySchoolId($schoolId);
 
-        return view('bills/create', $data);
+        return view('bills/create', [
+            'show_back' => true,
+            'back_url'  => site_url('/school/billing'),
+            'scholars' => $data['scholars']
+        ]);
     }
 
     public function store()
@@ -88,7 +97,12 @@ class BillingController extends BaseController
         ->where('bill_id', $id)
         ->findAll();
 
-    return view('bills/view', $data);
+    return view('bills/view', [
+        'bill' => $bill,
+        'payments' => $data['payments'],
+        'show_back' => true,
+        'back_url'  => site_url('/school/billing'),
+    ] + $data);
 }
 
 }
