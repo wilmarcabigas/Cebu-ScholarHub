@@ -11,8 +11,17 @@
                 <?= esc(isset($school['name']) ? $school['name'] : '') ?> Staff Portal
             </p>
         </div>
+         <div class="flex gap-3">
+            <a href="<?= site_url('school/scholars/create') ?>" 
+               class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add Scholar
+            </a>
+        </div>
     </header>
-
+   
     <!-- Quick Stats -->
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
@@ -38,7 +47,7 @@
             <div class="mt-3 text-xs text-red-600">Need attention</div> -->
         </div>
     </div>
-
+    
     <!-- Quick Actions -->
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <a href="<?= site_url('school/scholars') ?>" 
