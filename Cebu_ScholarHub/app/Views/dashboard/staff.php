@@ -13,26 +13,27 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Pending Reviews</div>
-    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">23</div>
-            <div class="mt-3 text-xs text-red-600">Needs attention</div>    -->
+            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['pending_reviews']) ?></div>
+            <div class="mt-3 text-xs text-red-600">Needs attention</div>    
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
+            
             <div class="text-sm font-medium text-gray-500">New Applications</div>
-    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">45</div>
-            <div class="mt-3 text-xs text-gray-500">This week</div> -->
+            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['new_applications']) ?></div>
+            <div class="mt-3 text-xs text-gray-500">This week</div>
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">School Updates</div>
-    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">15</div>
-            <div class="mt-3 text-xs text-indigo-600">From 5 schools</div> -->
+            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['school_updates']) ?></div>
+            <div class="mt-3 text-xs text-indigo-600">From 5 schools</div> 
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Messages</div>
-    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">18</div>
-            <div class="mt-3 text-xs text-indigo-600">6 unread</div> -->
+            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['messages']) ?></div>
+            <div class="mt-3 text-xs text-indigo-600">Unread messages</div> 
         </div>
     </div>
 

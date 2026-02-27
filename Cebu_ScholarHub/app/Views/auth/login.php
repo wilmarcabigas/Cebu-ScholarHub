@@ -46,9 +46,9 @@
         </button>
       </form>
 
-      <p class="text-xs text-gray-500 mt-4">
+      <!--<p class="text-xs text-gray-500 mt-4">
         Demo: <span class="font-mono">admin@cebu-scholar.gov</span> / <span class="font-mono">secret123</span>
-      </p>
+      </p>-->
     </div>
   </div>
 </div>
