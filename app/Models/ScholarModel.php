@@ -19,6 +19,7 @@ class ScholarModel extends Model
         'middle_name',
         'gender',
         'course',
+         'semester',
         'year_level',
         'status',
         'date_of_birth',

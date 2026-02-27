@@ -4,7 +4,8 @@
 <?php
   $role = $user['role'] ?? '';
   $selectedSchool = $_GET['school_id'] ?? '';
-  $selectedCourse = $_GET['course'] ?? '';
+  $selectedSemester = $_GET['semester'] ?? '';
+  $semesters = range(1, 10); // 10 semesters
 ?>
 
 <div class="space-y-6">
@@ -22,11 +23,10 @@
     </div>
   </header>
 
-
   <!-- FILTER SECTION -->
   <div class="mb-6 flex flex-col sm:flex-row sm:items-end gap-6 max-w-4xl">
 
-    <!-- SCHOOL FILTER (ONLY staff & admin) -->
+    <!-- SCHOOL FILTER (staff & admin) -->
     <?php if (in_array($role, ['staff', 'admin'])): ?>
       <form method="get" action="<?= site_url('scholars') ?>" class="relative w-64">
         <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -34,7 +34,7 @@
         </label>
 
         <button type="button" id="dropdownButton"
-          class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-left flex justify-between items-center focus:ring-2 focus:ring-indigo-500">
+          class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 text-left flex justify-between items-center">
           
           <span id="dropdownLabel">
             <?php
@@ -69,35 +69,30 @@
         <input type="hidden" name="school_id" id="schoolInput"
                value="<?= esc($selectedSchool) ?>">
 
-        <!-- Preserve course filter -->
-        <input type="hidden" name="course"
-               value="<?= esc($selectedCourse) ?>">
+        <input type="hidden" name="semester"
+               value="<?= esc($selectedSemester) ?>">
       </form>
     <?php endif; ?>
 
 
-    <!-- COURSE FILTER (ONLY school_staff) -->
-    <?php if (in_array($role, ['school_staff', 'school_admin'])): ?>
-
-      <?php
-        $courses = array_unique(array_column($scholars, 'course'));
-      ?>
+    <!-- SEMESTER FILTER (school staff & admin) -->
+    <?php if (in_array($role, ['staff', 'admin', 'school_staff', 'school_admin'])): ?>
 
       <form method="get" action="<?= site_url('scholars') ?>" class="w-64">
         <label class="block text-sm font-medium text-gray-700 mb-1">
-          Filter by Course
+          Filter by Semester
         </label>
 
-        <select name="course"
+        <select name="semester"
                 onchange="this.form.submit()"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500">
+                class="w-full border border-gray-300 rounded-lg px-3 py-2">
 
-          <option value="">All Courses</option>
+          <option value="">All Semesters</option>
 
-          <?php foreach ($courses as $course): ?>
-            <option value="<?= esc($course) ?>"
-              <?= $selectedCourse === $course ? 'selected' : '' ?>>
-              <?= esc($course) ?>
+          <?php foreach ($semesters as $sem): ?>
+            <option value="<?= $sem ?>"
+              <?= $selectedSemester == $sem ? 'selected' : '' ?>>
+              Semester <?= $sem ?>
             </option>
           <?php endforeach; ?>
 
@@ -110,7 +105,7 @@
     <?php endif; ?>
 
 
-    <!-- ADD BUTTON (Visible to all roles) -->
+    <!-- ADD BUTTON -->
     <?php if (in_array($role, ['staff','admin','school_staff'])): ?>
       <a href="<?= site_url('scholars/create') ?>"
          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
@@ -133,6 +128,7 @@
             <th class="px-6 py-3 text-left text-xs font-medium uppercase">First Name</th>
             <th class="px-6 py-3 text-left text-xs font-medium uppercase">Last Name</th>
             <th class="px-6 py-3 text-left text-xs font-medium uppercase">Course</th>
+            <th class="px-6 py-3 text-left text-xs font-medium uppercase">Semester</th>
             <th class="px-6 py-3 text-left text-xs font-medium uppercase">Status</th>
             <th class="px-6 py-3 text-left text-xs font-medium uppercase">School</th>
             <th class="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
@@ -143,29 +139,53 @@
           <?php foreach ($scholars as $scholar): ?>
 
             <?php
-              if ($selectedCourse && $selectedCourse !== $scholar['course']) continue;
               if ($selectedSchool && $selectedSchool != $scholar['school_id']) continue;
+              if ($selectedSemester && $selectedSemester != $scholar['semester']) continue;
             ?>
 
             <tr>
               <td class="px-6 py-4"><?= esc($scholar['first_name']) ?></td>
               <td class="px-6 py-4"><?= esc($scholar['last_name']) ?></td>
               <td class="px-6 py-4"><?= esc($scholar['course']) ?></td>
+              <td class="px-6 py-4">Semester <?= esc($scholar['semester']) ?></td>
               <td class="px-6 py-4"><?= esc($scholar['status']) ?></td>
               <td class="px-6 py-4"><?= esc($scholar['school_name']) ?></td>
 
               <td class="px-6 py-4 flex gap-4">
-                <a href="<?= site_url('scholars/edit/'.$scholar['id']) ?>"
-                   class="text-indigo-600 hover:text-indigo-900">
-                  Edit
-                </a>
+                  <!-- Edit Icon -->
+  <a href="<?= site_url('scholars/edit/'.$scholar['id']) ?>"
+     class="text-indigo-600 hover:text-indigo-900"
+     title="Edit">
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         class="w-5 h-5" 
+         fill="none" 
+         viewBox="0 0 24 24" 
+         stroke="currentColor">
+      <path stroke-linecap="round" 
+            stroke-linejoin="round" 
+            stroke-width="2" 
+            d="M11 5h2m-1-1v2m-7.586 9.414l8-8a2 2 0 012.828 0l2.344 2.344a2 2 0 010 2.828l-8 8H7v-2.586z"/>
+    </svg>
+  </a>
 
-                <a href="<?= site_url('scholars/delete/'.$scholar['id']) ?>"
-                   onclick="return confirm('Are you sure you want to delete this scholar?');"
-                   class="text-red-600 hover:text-red-800">
-                  Delete
-                </a>
-              </td>
+  <!-- Delete Icon -->
+  <a href="<?= site_url('scholars/delete/'.$scholar['id']) ?>"
+     onclick="return confirm('Are you sure you want to delete this scholar?');"
+     class="text-red-600 hover:text-red-800"
+     title="Delete">
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         class="w-5 h-5" 
+         fill="none" 
+         viewBox="0 0 24 24" 
+         stroke="currentColor">
+      <path stroke-linecap="round" 
+            stroke-linejoin="round" 
+            stroke-width="2" 
+            d="M6 7h12M9 7V4h6v3m-7 4v6m4-6v6m4-6v6"/>
+    </svg>
+  </a>
+
+</td> 
             </tr>
 
           <?php endforeach; ?>
@@ -178,7 +198,7 @@
 </div>
 
 
-<!-- DROPDOWN SCRIPT (Safe even if hidden) -->
+<!-- DROPDOWN SCRIPT -->
 <script>
 const dropdownButton = document.getElementById('dropdownButton');
 const dropdownMenu = document.getElementById('dropdownMenu');

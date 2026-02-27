@@ -53,6 +53,16 @@
         <input type="text" name="course" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required>
       </div>
 
+<div class="form-group">
+  <label for="semester" class="block text-sm font-medium text-gray-700">Semester</label>
+  <select name="semester" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required>
+    <option value="">Select Semester</option>
+    <?php for ($i = 1; $i <= 10; $i++): ?>
+      <option value="<?= $i ?>">Semester <?= $i ?></option>
+    <?php endfor; ?>
+  </select>
+</div>
+
       <div class="form-group">
         <label for="year_level" class="block text-sm font-medium text-gray-700">Year Level</label>
         <input type="number" name="year_level" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required>

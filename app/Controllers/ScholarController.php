@@ -77,6 +77,7 @@ class ScholarController extends BaseController
             'last_name'     => $this->request->getPost('last_name'),
             'gender'        => $this->request->getPost('gender'),
             'course'        => $this->request->getPost('course'),
+             'semester'     => $this->request->getPost('semester'),
             'year_level'    => $this->request->getPost('year_level'),
             'status'        => $this->request->getPost('status'),
             'date_of_birth' => $this->request->getPost('date_of_birth'),
