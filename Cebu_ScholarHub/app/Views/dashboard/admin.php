@@ -25,26 +25,30 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Total Scholars</div>
-        <!--<div class="mt-1 text-3xl font-semibold text-gray-900">2,451</div>
-            <div class="mt-3 text-xs text-green-600">↑ 12% from last month</div>-->
+            <div class="mt-1 text-3xl font-semibold text-gray-900">
+            <?= esc($stats['total_scholars']) ?>
+            </div>
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Active Schools</div>
-        <!--    <div class="mt-1 text-3xl font-semibold text-gray-900">15</div>
-            <div class="mt-3 text-xs text-gray-500">No change</div> -->
+            <div class="mt-1 text-3xl font-semibold text-gray-900">
+                <?= esc($stats['active_schools']) ?>
+            </div>
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Pending Bills</div>
-        <!--    <div class="mt-1 text-3xl font-semibold text-gray-900">₱2.4M</div>
-            <div class="mt-3 text-xs text-red-600">↑ 8% this semester</div> -->
+            <div class="mt-1 text-3xl font-semibold text-gray-900">
+                <?= esc($stats['pending_bills']) ?>
+            </div>
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Messages</div>
-        <!--    <div class="mt-1 text-3xl font-semibold text-gray-900">24</div>
-            <div class="mt-3 text-xs text-indigo-600">12 unread</div> -->
+            <div class="text-sm font-medium text-gray-500">Unread Messages</div>
+            <div class="mt-1 text-3xl font-semibold text-gray-900">
+                <?= esc($stats['messages']) ?>
+            </div>
         </div>
     </div>
 
@@ -92,18 +96,18 @@
             <?php foreach(range(1, 5) as $i): ?>
             <div class="px-5 py-4">
                 <div class="flex items-center justify-between">
-                <!--    <div>
+                    <div>
                         <p class="text-sm text-gray-900">New scholar added by <span class="font-medium">USC Admin</span></p>
                         <p class="text-xs text-gray-500 mt-0.5">Juan Dela Cruz (BSCS) enrolled for AY 2023-2024</p>
                     </div>
-                    <span class="text-xs text-gray-500">2 hours ago</span>  -->
+                    <span class="text-xs text-gray-500">2 hours ago</span>  
                 </div>
             </div>
             <?php endforeach; ?>
         </div>
         <footer class="px-5 py-4 border-t border-gray-200">
-            <a href="<?= site_url('admin/activity') ?>" 
-               class="text-sm text-indigo-600 hover:text-indigo-700">View all activity →</a>
+        <!--    <a href="<?= site_url('admin/activity') ?>" 
+               class="text-sm text-indigo-600 hover:text-indigo-700">View all activity →</a>-->
         </footer>
     </section>
 </div>

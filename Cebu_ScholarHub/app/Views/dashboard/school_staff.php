@@ -17,30 +17,38 @@
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Active Scholars</div>
-    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">78</div>
-            <div class="mt-3 text-xs text-gray-500">Current semester</div>  -->
+            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['active_scholars']) ?></div>
+            <div class="mt-3 text-xs text-gray-500">Current semester</div> 
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">Pending Bills</div>
-    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">12</div>
-            <div class="mt-3 text-xs text-yellow-600">Awaiting approval</div> -->
+            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['pending_bills']) ?></div>
+            <div class="mt-3 text-xs text-yellow-600">Awaiting approval</div> 
         </div>
+        
+        <!--<div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
+            <div class="text-sm font-medium text-gray-500">Requirements Due</div>
+            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['requirements_due']) ?></div>
+            <div class="mt-3 text-xs text-red-600">Need attention</div> 
+        </div>-->
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
+            <div class="text-sm font-medium text-gray-500">Messages</div>
+            <div class="mt-1 text-3xl font-semibold text-gray-900">
+                <?= esc($stats['messages']) ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
         <a href="<?= site_url('messages') ?>"
            class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
             <h3 class="font-semibold text-gray-900">message</h3>
             <p class="mt-1 text-sm text-gray-500">Message partner schools </p>
             <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View messages →</span>
         </a>
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Requirements Due</div>
-    <!--        <div class="mt-1 text-3xl font-semibold text-gray-900">5</div>
-            <div class="mt-3 text-xs text-red-600">Need attention</div> -->
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <a href="<?= site_url('school/scholars') ?>" 
            class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
             <h3 class="font-semibold text-gray-900">Scholar Records</h3>
@@ -55,12 +63,12 @@
             <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">Submit billing →</span>
         </a>
 
-        <a href="<?= site_url('school/requirements') ?>"
+    <!--    <a href="<?= site_url('school/requirements') ?>"
            class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
             <h3 class="font-semibold text-gray-900">Requirements</h3>
             <p class="mt-1 text-sm text-gray-500">Track scholar requirements status.</p>
             <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">Check status →</span>
-        </a>
+        </a>-->
     </div>
 
     <!-- Tasks & Notifications -->
@@ -74,11 +82,11 @@
                 <?php foreach(range(1, 4) as $i): ?>
                 <div class="px-5 py-4">
                     <div class="flex items-center justify-between">
-                    <!--    <div>
+                        <div>
                             <p class="text-sm text-gray-900">Update scholar grades</p>
                             <p class="text-xs text-gray-500 mt-0.5">For Juan Dela Cruz</p>
                         </div>
-                        <span class="text-xs text-red-600">Due today</span> -->
+                        <span class="text-xs text-red-600">Due today</span> 
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -99,17 +107,17 @@
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
                         </div>
-                    <!--    <div>
+                        <div>
                             <p class="text-sm text-gray-900">Billing approved for Maria Santos</p>
                             <p class="text-xs text-gray-500 mt-0.5">2 hours ago</p> 
-                        </div>  -->
+                        </div>  
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
             <footer class="px-5 py-4 border-t border-gray-200">
-                <a href="<?= site_url('school/updates') ?>" 
-                   class="text-sm text-indigo-600 hover:text-indigo-700">View all updates →</a>
+               <!-- <a href="<?= site_url('school/updates') ?>" 
+                   class="text-sm text-indigo-600 hover:text-indigo-700">View all updates →</a>-->
             </footer>
         </section>
     </div>
