@@ -95,37 +95,57 @@
 
               <!-- UPDATED ACTION COLUMN -->
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+
+                  <!-- View Details -->
+                  <button onclick="openDetailsModal(<?= htmlspecialchars(json_encode($scholar)) ?>)"
+                          class="text-blue-600 hover:text-blue-900"
+                          title="View Details">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-6 w-6"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                      <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
 
                   <!-- Edit -->
-                  <a href="/scholars/edit/<?= $scholar['id'] ?>" 
+                  <a href="/scholars/edit/<?= $scholar['id'] ?>"
                      class="text-indigo-600 hover:text-indigo-900"
                      title="Edit">
-                    <svg xmlns="http://www.w3.org/2000/svg" 
-                         class="h-8 w-8" 
-                         fill="none" 
-                         viewBox="0 0 24 24" 
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-6 w-6"
+                         fill="none"
+                         viewBox="0 0 24 24"
                          stroke="currentColor">
-                      <path stroke-linecap="round" 
-                            stroke-linejoin="round" 
-                            stroke-width="2" 
+                      <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
                             d="M15.232 5.232l3.536 3.536M9 13l6-6 3 3-6 6H9v-3z"/>
                     </svg>
                   </a>
 
                   <!-- Delete -->
-                  <a href="/scholars/delete/<?= $scholar['id'] ?>" 
-                     class="text-black-900 hover:text-blue-300"
+                  <a href="/scholars/delete/<?= $scholar['id'] ?>"
+                     class="text-red-600 hover:text-red-900"
                      title="Delete"
                      onclick="return confirm('Are you sure you want to delete this scholar?');">
-                      <svg xmlns="http://www.w3.org/2000/svg" 
-                         class="h-8 w-8" 
-                         fill="none" 
-                         viewBox="0 0 24 24" 
+                      <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-6 w-6"
+                         fill="none"
+                         viewBox="0 0 24 24"
                          stroke="currentColor">
-                      <path stroke-linecap="round" 
-                            stroke-linejoin="round" 
-                            stroke-width="2" 
+                      <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
                             d="M9 3h6m2 0h-10m1 0l1 2h6l1-2M6 7h12m-1 0l-1 12a2 2 0 01-2 2H10a2 2 0 01-2-2L7 7m3 4v6m4-6v6"/>
                     </svg>
                   </a>
@@ -141,30 +161,151 @@
   </section>
 </div>
 
+<!-- SCHOLAR DETAILS MODAL -->
+<div id="detailsModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+        <h2 class="text-xl font-semibold" id="modalTitle">Scholar Details</h2>
+        <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        <!-- PERSONAL INFO -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Personal Information</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-sm font-medium text-gray-700">First Name</label><p id="modal_first_name" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Middle Name</label><p id="modal_middle_name" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Last Name</label><p id="modal_last_name" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Name Extension</label><p id="modal_name_extension" class="text-gray-900"></p></div>
+          </div>
+        </div>
+
+        <!-- CONTACT & IDENTIFICATION -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Contact & Identification</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-sm font-medium text-gray-700">Contact Number</label><p id="modal_contact_no" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">LRN No.</label><p id="modal_lrn_no" class="text-gray-900"></p></div>
+            <div class="col-span-2"><label class="text-sm font-medium text-gray-700">Email Address</label><p id="modal_email" class="text-gray-900"></p></div>
+            <div class="col-span-2"><label class="text-sm font-medium text-gray-700">Address</label><p id="modal_address" class="text-gray-900"></p></div>
+          </div>
+        </div>
+
+        <!-- ACADEMIC INFO -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Academic Information</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-sm font-medium text-gray-700">Course</label><p id="modal_course" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Year Level</label><p id="modal_year_level" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Semesters Acquired</label><p id="modal_semesters_acquired" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Status</label><p id="modal_status" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">School</label><p id="modal_school_name" class="text-gray-900"></p></div>
+          </div>
+        </div>
+
+        <!-- SCHOOL HISTORY -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">School History</h3>
+          <div class="space-y-3">
+            <div><label class="text-sm font-medium text-gray-700">Elementary School</label><p id="modal_school_elementary" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Junior High School</label><p id="modal_school_junior" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Senior High School</label><p id="modal_school_senior_high" class="text-gray-900"></p></div>
+          </div>
+        </div>
+
+        <!-- BIOGRAPHICAL -->
+        <div class="border-b pb-4">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Biographical Information</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-sm font-medium text-gray-700">Gender</label><p id="modal_gender" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Date of Birth</label><p id="modal_date_of_birth" class="text-gray-900"></p></div>
+          </div>
+        </div>
+
+        <!-- VOUCHER -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Voucher Information</h3>
+          <div><label class="text-sm font-medium text-gray-700">Voucher Number</label><p id="modal_voucher_no" class="text-gray-900"></p></div>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex justify-end gap-2">
+        <button onclick="closeDetailsModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+  // Dropdown functionality
   const dropdownButton = document.getElementById('dropdownButton');
   const dropdownMenu = document.getElementById('dropdownMenu');
   const dropdownLabel = document.getElementById('dropdownLabel');
   const schoolInput = document.getElementById('schoolInput');
 
-  dropdownButton.addEventListener('click', () => {
-    dropdownMenu.classList.toggle('hidden');
-  });
-
-  dropdownMenu.querySelectorAll('li').forEach(item => {
-    item.addEventListener('click', () => {
-      const value = item.dataset.value;
-      const label = item.innerText.trim();
-      dropdownLabel.innerText = label;
-      schoolInput.value = value;
-      dropdownMenu.classList.add('hidden');
-      item.closest('form')?.submit();
+  if (dropdownButton) {
+    dropdownButton.addEventListener('click', () => {
+      dropdownMenu.classList.toggle('hidden');
     });
-  });
 
-  document.addEventListener('click', (e) => {
-    if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-      dropdownMenu.classList.add('hidden');
+    dropdownMenu.querySelectorAll('li').forEach(item => {
+      item.addEventListener('click', () => {
+        const value = item.dataset.value;
+        const label = item.innerText.trim();
+        dropdownLabel.innerText = label;
+        schoolInput.value = value;
+        dropdownMenu.classList.add('hidden');
+        item.closest('form')?.submit();
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.classList.add('hidden');
+      }
+    });
+  }
+
+  // Modal functionality
+  function openDetailsModal(scholar) {
+    document.getElementById('modalTitle').textContent = scholar.first_name + ' ' + scholar.last_name;
+    document.getElementById('modal_first_name').textContent = scholar.first_name || '';
+    document.getElementById('modal_middle_name').textContent = scholar.middle_name || '';
+    document.getElementById('modal_last_name').textContent = scholar.last_name || '';
+    document.getElementById('modal_name_extension').textContent = scholar.name_extension || '';
+    document.getElementById('modal_contact_no').textContent = scholar.contact_no || '';
+    document.getElementById('modal_lrn_no').textContent = scholar.lrn_no || '';
+    document.getElementById('modal_email').textContent = scholar.email || '';
+    document.getElementById('modal_address').textContent = scholar.address || '';
+    document.getElementById('modal_course').textContent = scholar.course || '';
+    document.getElementById('modal_year_level').textContent = scholar.year_level || '';
+    document.getElementById('modal_semesters_acquired').textContent = scholar.semesters_acquired || '';
+    document.getElementById('modal_status').textContent = scholar.status || '';
+    document.getElementById('modal_school_name').textContent = scholar.school_name || '';
+    document.getElementById('modal_school_elementary').textContent = scholar.school_elementary || '';
+    document.getElementById('modal_school_junior').textContent = scholar.school_junior || '';
+    document.getElementById('modal_school_senior_high').textContent = scholar.school_senior_high || '';
+    document.getElementById('modal_gender').textContent = scholar.gender || '';
+    document.getElementById('modal_date_of_birth').textContent = scholar.date_of_birth || '';
+    document.getElementById('modal_voucher_no').textContent = scholar.voucher_no || '';
+
+    document.getElementById('detailsModal').classList.remove('hidden');
+  }
+
+  function closeDetailsModal() {
+    document.getElementById('detailsModal').classList.add('hidden');
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('detailsModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'detailsModal') {
+      closeDetailsModal();
     }
   });
 </script>

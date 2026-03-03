@@ -71,16 +71,25 @@ class ScholarController extends BaseController
             : $this->request->getPost('school_id');
 
         $data = [
-            'school_id'     => $schoolId,
-            'first_name'    => $this->request->getPost('first_name'),
-            'middle_name'   => $this->request->getPost('middle_name'),
-            'last_name'     => $this->request->getPost('last_name'),
-            'gender'        => $this->request->getPost('gender'),
-            'course'        => $this->request->getPost('course'),
-            'year_level'    => $this->request->getPost('year_level'),
-            'status'        => $this->request->getPost('status'),
-            'date_of_birth' => $this->request->getPost('date_of_birth'),
-            'email'         => $this->request->getPost('email'),
+            'school_id'        => $schoolId,
+            'first_name'       => $this->request->getPost('first_name'),
+            'middle_name'      => $this->request->getPost('middle_name'),
+            'last_name'        => $this->request->getPost('last_name'),
+            'name_extension'   => $this->request->getPost('name_extension'),
+            'gender'           => $this->request->getPost('gender'),
+            'date_of_birth'    => $this->request->getPost('date_of_birth'),
+            'email'            => $this->request->getPost('email'),
+            'contact_no'       => $this->request->getPost('contact_no'),
+            'address'          => $this->request->getPost('address'),
+            'course'           => $this->request->getPost('course'),
+            'year_level'       => $this->request->getPost('year_level'),
+            'status'           => $this->request->getPost('status'),
+            'semesters_acquired' => $this->request->getPost('semesters_acquired'),
+            'voucher_no'       => $this->request->getPost('voucher_no'),
+            'lrn_no'           => $this->request->getPost('lrn_no'),
+            'school_elementary' => $this->request->getPost('school_elementary'),
+            'school_junior'    => $this->request->getPost('school_junior'),
+            'school_senior_high' => $this->request->getPost('school_senior_high'),
         ];
 
         if (!$this->scholarModel->insert($data)) {
@@ -120,24 +129,54 @@ class ScholarController extends BaseController
     }
 
     public function update($id)
-    {
-        $model = new ScholarModel();
+{
+    $model = new ScholarModel();
+    $authUser = session()->get('auth_user');
 
-        if (! $this->validate([
-            'first_name' => 'required',
-            'last_name'  => 'required',
-            'email'      => 'required|valid_email',
-        ])) {
-            return redirect()->back()
-                ->withInput()
-                ->with('errors', $this->validator->getErrors());
-        }
+    $validationRules = $model->scholarValidationRules($id);
 
-        $model->update($id, $this->request->getPost());
-
-        return redirect()->to('/scholars')
-            ->with('success', 'Scholar updated successfully');
+    if (!$this->validate($validationRules)) {
+        return redirect()->back()
+            ->withInput()
+            ->with('errors', $this->validator->getErrors());
     }
+
+    // FIX SCHOOL ID BASED ON ROLE
+    $schoolId = in_array($authUser['role'], ['school_admin', 'school_staff'])
+        ? $authUser['school_id']
+        : $this->request->getPost('school_id');
+
+    $data = [
+        'school_id'          => $schoolId,
+        'first_name'         => $this->request->getPost('first_name'),
+        'middle_name'        => $this->request->getPost('middle_name'),
+        'last_name'          => $this->request->getPost('last_name'),
+        'name_extension'     => $this->request->getPost('name_extension'),
+        'gender'             => $this->request->getPost('gender'),
+        'date_of_birth'      => $this->request->getPost('date_of_birth'),
+        'email'              => $this->request->getPost('email'),
+        'contact_no'         => $this->request->getPost('contact_no'),
+        'address'            => $this->request->getPost('address'),
+        'course'             => $this->request->getPost('course'),
+        'year_level'         => $this->request->getPost('year_level'),
+        'status'             => $this->request->getPost('status'),
+        'semesters_acquired' => $this->request->getPost('semesters_acquired'),
+        'voucher_no'         => $this->request->getPost('voucher_no'),
+        'lrn_no'             => $this->request->getPost('lrn_no'),
+        'school_elementary'  => $this->request->getPost('school_elementary'),
+        'school_junior'      => $this->request->getPost('school_junior'),
+        'school_senior_high' => $this->request->getPost('school_senior_high'),
+    ];
+
+    if (!$model->update($id, $data)) {
+        return redirect()->back()
+            ->withInput()
+            ->with('errors', $model->errors());
+    }
+
+    return redirect()->to('/scholars')
+        ->with('success', 'Scholar updated successfully');
+}
        
     public function delete($id)
     {
@@ -228,6 +267,30 @@ class ScholarController extends BaseController
                 }
             }
 
+            // ===== PHONE NUMBER FORMATTING =====
+            if (!empty($rowData['contact_no'])) {
+                // Strip non-numeric characters except +
+                $rowData['contact_no'] = preg_replace('/[^0-9+]/', '', $rowData['contact_no']);
+            }
+
+            // ===== LRN VALIDATION =====
+            if (!empty($rowData['lrn_no'])) {
+                // Remove hyphens and validate it's 12 digits
+                $lrnClean = preg_replace('/[^0-9]/', '', $rowData['lrn_no']);
+                if (strlen($lrnClean) !== 12 || !is_numeric($lrnClean)) {
+                    continue; // Skip row with invalid LRN
+                }
+                $rowData['lrn_no'] = $lrnClean;
+            }
+
+            // ===== SEMESTERS VALIDATION =====
+            if (!empty($rowData['semesters_acquired'])) {
+                $semesters = (int)$rowData['semesters_acquired'];
+                if ($semesters < 1 || $semesters > 8) {
+                    $rowData['semesters_acquired'] = 1; // Default to 1 if invalid
+                }
+            }
+
             // ===== REQUIRED FIELDS CHECK =====
             if (
                 empty($rowData['school_id']) ||
@@ -237,9 +300,39 @@ class ScholarController extends BaseController
                 empty($rowData['course']) ||
                 empty($rowData['year_level']) ||
                 empty($rowData['status']) ||
-                empty($rowData['date_of_birth'])
+                empty($rowData['date_of_birth']) ||
+                empty($rowData['contact_no']) ||
+                empty($rowData['address']) ||
+                empty($rowData['lrn_no']) ||
+                empty($rowData['voucher_no']) ||
+                empty($rowData['school_elementary']) ||
+                empty($rowData['school_junior']) ||
+                empty($rowData['school_senior_high'])
             ) {
                 continue;
+            }
+
+            // ===== DUPLICATE VOUCHER/LRN CHECK =====
+            if (!empty($rowData['voucher_no'])) {
+                $existingVoucher = $model->where('voucher_no', $rowData['voucher_no'])->first();
+                if ($existingVoucher) {
+                    // Update if email matches
+                    if (!empty($rowData['email']) && $existingVoucher['email'] === $rowData['email']) {
+                        $model->update($existingVoucher['id'], $rowData);
+                    }
+                    continue;
+                }
+            }
+
+            if (!empty($rowData['lrn_no'])) {
+                $existingLRN = $model->where('lrn_no', $rowData['lrn_no'])->first();
+                if ($existingLRN) {
+                    // Update if email matches
+                    if (!empty($rowData['email']) && $existingLRN['email'] === $rowData['email']) {
+                        $model->update($existingLRN['id'], $rowData);
+                    }
+                    continue;
+                }
             }
 
             // ===== DUPLICATE EMAIL CHECK =====

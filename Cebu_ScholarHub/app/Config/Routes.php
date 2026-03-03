@@ -70,12 +70,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('create', 'ScholarController::create');
     $routes->post('store', 'ScholarController::store');
     $routes->get('edit/(:num)', 'ScholarController::edit/$1');
-
-
-    $routes->put('update/(:num)', 'ScholarController::update/$1');
+    $routes->post('update/(:num)', 'ScholarController::update/$1');
     $routes->get('delete/(:num)', 'ScholarController::delete/$1');
 
-    
+
     $routes->get('import', 'ScholarController::importForm');
     $routes->post('import', 'ScholarController::importExcel');
 });

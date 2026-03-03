@@ -22,7 +22,16 @@ class ScholarModel extends Model
         'year_level',
         'status',
         'date_of_birth',
-        'email'
+        'email',
+        'semesters_acquired',
+        'voucher_no',
+        'name_extension',
+        'address',
+        'contact_no',
+        'lrn_no',
+        'school_elementary',
+        'school_junior',
+        'school_senior_high'
     ];    
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';
@@ -40,6 +49,15 @@ class ScholarModel extends Model
         'status'      => 'required|in_list[active,on-hold,graduated]',
         'date_of_birth' => 'required|valid_date',
         'email' => 'required|valid_email',
+        'semesters_acquired' => 'required|is_natural_no_zero|less_than_equal_to[8]',
+        'voucher_no' => 'required|min_length[3]|max_length[50]',
+        'name_extension' => 'permit_empty|in_list[,Jr.,Sr.,II,III,IV,V,VI,VII,VIII]',
+        'address' => 'required|min_length[10]|max_length[500]',
+        'contact_no' => 'required|min_length[10]|max_length[20]',
+        'lrn_no' => 'required|exact_length[12]|numeric',
+        'school_elementary' => 'required|min_length[3]|max_length[255]',
+        'school_junior' => 'required|min_length[3]|max_length[255]',
+        'school_senior_high' => 'required|min_length[3]|max_length[255]',
     ];
 
     
@@ -50,21 +68,38 @@ class ScholarModel extends Model
         'email' => [
             'is_unique' => 'This email is already registered.',
         ],
+        'voucher_no' => [
+            'is_unique' => 'This voucher number is already in use.',
+        ],
+        'lrn_no' => [
+            'is_unique' => 'This LRN number is already assigned.',
+            'exact_length' => 'LRN must be exactly 12 digits.',
+            'numeric' => 'LRN must contain only numbers.',
+        ],
+        'contact_no' => [
+            'min_length' => 'Contact number must be at least 10 digits.',
+            'max_length' => 'Contact number must not exceed 20 characters.',
+        ],
+        'name_extension' => [
+            'in_list' => 'Please select a valid name extension.',
+        ],
     ];
     public function scholarValidationRules($id = null)
-    {
-        $rules = $this->validationRules;
+{
+    $rules = $this->validationRules;
 
-        if ($id) {
-            // UPDATE → ignore current record
-            $rules['email'] = "required|valid_email|is_unique[scholars.email,id,{$id}]";
-        } else {
-            // CREATE → must be fully unique
-            $rules['email'] = "required|valid_email|is_unique[scholars.email]";
-        }
-
-        return $rules;
+    if ($id) {
+        $rules['email'] = "required|valid_email|is_unique[scholars.email,id,{$id}]";
+        $rules['voucher_no'] = "required|min_length[3]|max_length[50]|is_unique[scholars.voucher_no,id,{$id}]";
+        $rules['lrn_no'] = "required|exact_length[12]|numeric|is_unique[scholars.lrn_no,id,{$id}]";
+    } else {
+        $rules['email'] = "required|valid_email|is_unique[scholars.email]";
+        $rules['voucher_no'] = "required|min_length[3]|max_length[50]|is_unique[scholars.voucher_no]";
+        $rules['lrn_no'] = "required|exact_length[12]|numeric|is_unique[scholars.lrn_no]";
     }
+
+    return $rules;
+}
 
     // Optional: Search functionality
     public function search($searchTerm)
