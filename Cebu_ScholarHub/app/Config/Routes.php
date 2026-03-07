@@ -94,9 +94,17 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 // Auth routes
 
 $routes->group('', ['filter' => 'guest'], static function ($routes) {
+
+    // 🔹 Login page
     $routes->get('login', 'AuthController::login');
+
+    // 🔹 Attempt login (process form)
     $routes->post('login', 'AuthController::attempt');
 
+    // 🔹 Unlock account via Gmail code
+    $routes->post('unlock', 'AuthController::unlock');
+    $routes->post('/login/verify-code', 'AuthController::verifyCode');
+    $routes->post('/login/resend-code', 'AuthController::resendCode');
     
 });
 

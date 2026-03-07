@@ -8,27 +8,52 @@ class AdminSeeder extends Seeder
 {
     public function run()
     {
-        // Hashing the passwords with the correct algorithm (PASSWORD_BCRYPT)
-        $passwordAdmin = password_hash('123', PASSWORD_BCRYPT);
-        $passwordSchool = password_hash('123', PASSWORD_BCRYPT);
+        // Strong passwords
+        $passwordAdmin = password_hash('Admin@1234', PASSWORD_BCRYPT);   // strong password
+        $passwordSchool = password_hash('School@1234', PASSWORD_BCRYPT); // strong password
 
-        // Get the database connection (you only need to do this once)
+        // Get the database connection
         $db = \Config\Database::connect();
 
-        // Insert the admin user
-        $db->table('users')->insert([
-            'username' => 'admin1',
-            'password' => $passwordAdmin,
-            'role' => 'scholar_admin',
-            'school_id' => null,
-        ]);
+        // Check if admin already exists
+        $existingAdmin = $db->table('users')->getWhere(['username' => 'admin1'])->getRowArray();
+        if ($existingAdmin) {
+            // Update existing admin password
+            $db->table('users')->update(
+                ['password' => $passwordAdmin],
+                ['id' => $existingAdmin['id']]
+            );
+            echo "Admin password updated successfully.\n";
+        } else {
+            // Insert new admin user
+            $db->table('users')->insert([
+                'username' => 'admin1',
+                'password' => $passwordAdmin,
+                'role' => 'scholar_admin',
+                'school_id' => null,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+            echo "Admin account created successfully.\n";
+        }
 
-        // Insert the school admin user
-        $db->table('users')->insert([
-            'username' => 'school1',
-            'password' => $passwordSchool,
-            'role' => 'school_admin',
-            'school_id' => null,
-        ]);
+        // Check if school admin exists
+        $existingSchoolAdmin = $db->table('users')->getWhere(['username' => 'school1'])->getRowArray();
+        if ($existingSchoolAdmin) {
+            $db->table('users')->update(
+                ['password' => $passwordSchool],
+                ['id' => $existingSchoolAdmin['id']]
+            );
+            echo "School admin password updated successfully.\n";
+        } else {
+            // Insert new school admin
+            $db->table('users')->insert([
+                'username' => 'school1',
+                'password' => $passwordSchool,
+                'role' => 'school_admin',
+                'school_id' => null,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+            echo "School admin account created successfully.\n";
+        }
     }
 }

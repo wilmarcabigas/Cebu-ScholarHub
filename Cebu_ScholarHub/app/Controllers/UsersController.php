@@ -93,6 +93,19 @@ public function index()
             $schoolId = $this->request->getPost('school_id');
 
             /* 🔐 BACKEND VALIDATION */
+            $validationRules = [
+                'email' => 'required|valid_email|is_unique[users.email]',
+                'full_name' => 'required|min_length[3]',
+                'role' => 'required',
+                'password' => [
+                    'rules' => 'required|min_length[8]|regex_match[/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).+$/]',
+                    'errors' => [
+                        'regex_match' => 'Password must contain uppercase, lowercase, number and special character.'
+                    ]
+                ]
+            ];
+
+
             if (in_array($role, ['school_admin', 'school_staff']) && empty($schoolId)) {
                 return redirect()->back()
                     ->withInput()

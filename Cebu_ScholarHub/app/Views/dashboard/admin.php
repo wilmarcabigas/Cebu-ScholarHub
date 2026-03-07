@@ -88,6 +88,7 @@
     </div>
 
     <!-- Recent Activity -->
+   
     <section class="rounded-xl bg-white shadow-sm ring-1 ring-gray-200">
         <header class="px-5 py-4 border-b border-gray-200">
             <h2 class="font-semibold text-gray-800">Recent System Activity</h2>
