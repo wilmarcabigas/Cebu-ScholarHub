@@ -6,6 +6,7 @@ use App\Models\ScholarModel;
 use App\Models\SchoolModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class ScholarController extends BaseController
 {
@@ -185,175 +186,518 @@ class ScholarController extends BaseController
         return redirect()->to(site_url('scholars'))
             ->with('message', 'Scholar deleted successfully');
     }
-    public function importForm()
+
+    /**
+     * Download error report CSV file
+     */
+    public function downloadErrorReport($filename)
     {
-        return view('scholars/import', [
-            'title' => 'Import Scholars from Excel',
-            'user'  => session()->get('auth_user'),
-            'show_back' => true,
-            'back_url' => site_url('scholars/create')
-        ]);
+        // Security: Only allow error report files
+        if (!preg_match('/^scholar_import_errors_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.csv$/', $filename)) {
+            throw new PageNotFoundException();
+        }
+
+        $filepath = FCPATH . 'uploads/' . $filename;
+
+        // Verify file exists
+        if (!file_exists($filepath)) {
+            throw new PageNotFoundException();
+        }
+
+        // Serve file with download headers
+        return $this->response->download($filepath, null);
     }
 
+    public function importForm()
+{
+    $authUser = session()->get('auth_user');
+
+    $data = [
+        'title' => 'Import Scholars from Excel',
+        'user'  => $authUser,
+        'show_back' => true,
+        'back_url' => site_url('scholars/create')
+    ];
+
+    // If staff, load schools for dropdown
+    if ($authUser['role'] === 'staff') {
+        $data['schools'] = $this->schoolModel->findAll();
+    }
+
+    return view('scholars/import', $data);
+    }
+
+    /**
+     * Import scholars from Excel file with advanced error handling and reporting
+     * Optimized for large files (5,000-50,000 rows)
+     * Returns to import page with summary and error report link
+     */
     public function importExcel()
     {
         $file = $this->request->getFile('excel_file');
 
         if (!$file->isValid()) {
-            return "Invalid file.";
+            return redirect()->back()
+                ->with('error', 'Invalid file upload.');
         }
 
-        $spreadsheet = IOFactory::load($file->getTempName());
-        $sheet = $spreadsheet->getActiveSheet();
-        $rows = $sheet->toArray();
+        try {
+            // ===== CONFIGURATION =====
+            $batchSize = 500;
+            $schoolCache = [];
+            $existingRecords = [];
+            $importSummary = [
+                'total_rows' => 0,
+                'imported' => 0,
+                'updated' => 0,
+                'skipped' => 0,
+                'errors' => []
+            ];
 
-        if (count($rows) < 2) {
-            return "Excel file is empty.";
-        }
+            $requiredColumns = [
+                'semesters acquired',
+                'voucher no.',
+                'last name',
+                'first name',
+                'middle name',
+                'extension',
+                'gender',
+                'course',
+                'year level',
+                'status',
+                'birthdate',
+                'address',
+                'contact no.',
+                'email address',
+                'lrn no.',
+                'school (elementary)',
+                'school (junior)',
+                'school (senior high school)'
+            ];
 
-        $header = array_map('trim', $rows[0]);
+            $columnMap = [
+                'semesters acquired' => 'semesters_acquired',
+                'voucher no.' => 'voucher_no',
+                'last name' => 'last_name',
+                'first name' => 'first_name',
+                'middle name' => 'middle_name',
+                'extension' => 'name_extension',
+                'gender' => 'gender',
+                'course' => 'course',
+                'year level' => 'year_level',
+                'status' => 'status',
+                'birthdate' => 'date_of_birth',
+                'address' => 'address',
+                'contact no.' => 'contact_no',
+                'email address' => 'email',
+                'lrn no.' => 'lrn_no',
+                'school (elementary)' => 'school_elementary',
+                'school (junior)' => 'school_junior',
+                'school (senior high school)' => 'school_senior_high'
+            ];
 
-        $model = new ScholarModel();
-        $schoolModel = new SchoolModel();
+            // ===== LOAD SPREADSHEET =====
+            $spreadsheet = IOFactory::load($file->getTempName());
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
 
-        $db = \Config\Database::connect();
-        $db->transStart();
-
-        for ($i = 1; $i < count($rows); $i++) {
-
-            $rowData = [];
-            $row = $rows[$i];
-
-            foreach ($header as $key => $column) {
-                if (empty($column)) continue;
-                $rowData[$column] = trim($row[$key]);
+            if (count($rows) < 2) {
+                return redirect()->back()
+                    ->with('error', 'Excel file is empty or contains no data rows.');
             }
 
-            // ===== SCHOOL NAME TO ID CONVERSION =====
-            if (!empty($rowData['school_name'])) {
+            // ===== VALIDATE COLUMN HEADERS =====
+            $header = array_map('trim', $rows[0]);
+            $headerLower = array_map('trim', array_map('strtolower', $rows[0]));
+            $requiredLower = array_map('strtolower', $requiredColumns);
 
-                $school = $schoolModel
-                    ->where('name', $rowData['school_name'])
-                    ->first();
+            $missingColumns = array_diff($requiredLower, $headerLower);
 
-                if (!$school) {
-                    $newId = $schoolModel->insert([
-                        'name' => $rowData['school_name']
-                    ]);
-                    $rowData['school_id'] = $newId;
-                } else {
-                    $rowData['school_id'] = $school['id'];
+            if (!empty($missingColumns)) {  
+                return redirect()->back()
+                    ->with('error', "Missing columns: " . implode(', ', $missingColumns));
+            }
+
+            // DEBUG: Log actual headers
+            log_message('debug', 'Excel Headers: ' . json_encode($header));
+            log_message('debug', 'Expected Headers: ' . json_encode($requiredColumns));
+
+            if ($headerLower !== $requiredLower) {
+                $expectedOrder = implode("\n", array_map(fn($col) => "- $col", $requiredColumns));
+                $actualOrder = implode("\n", array_map(fn($col) => "- $col", $header));
+                
+                log_message('error', 'Column mismatch. Expected: ' . json_encode($requiredLower) . ' Got: ' . json_encode($headerLower));
+                
+                return redirect()->back()
+                    ->with('error', "Excel file has incorrect column format or order.\n\n=== ACTUAL HEADERS ===\n$actualOrder\n\n=== EXPECTED HEADERS ===\n$expectedOrder");
+            }
+
+            // ===== CACHE EXISTING RECORDS =====
+            $scholarModel = new ScholarModel();
+            $existingVouchers = $scholarModel->select('id, voucher_no, lrn_no, email')->findAll();
+            foreach ($existingVouchers as $record) {
+                if ($record['voucher_no']) {
+                    $existingRecords['voucher'][$record['voucher_no']] = $record['id'];
                 }
-
-                $rowData['school_id'] = $school['id'];
-                unset($rowData['school_name']);
-            } else {
-                continue;
-            }
-
-            // ===== DATE FORMAT FIX =====
-            if (!empty($rowData['date_of_birth'])) {
-
-                if (is_numeric($rowData['date_of_birth'])) {
-                    $rowData['date_of_birth'] = date(
-                        'Y-m-d',
-                        Date::excelToTimestamp($rowData['date_of_birth'])
-                    );
-                } else {
-                    $rowData['date_of_birth'] = date(
-                        'Y-m-d',
-                        strtotime($rowData['date_of_birth'])
-                    );
+                if ($record['lrn_no']) {
+                    $existingRecords['lrn'][$record['lrn_no']] = $record['id'];
+                }
+                if ($record['email']) {
+                    $existingRecords['email'][$record['email']] = $record['id'];
                 }
             }
 
-            // ===== PHONE NUMBER FORMATTING =====
-            if (!empty($rowData['contact_no'])) {
-                // Strip non-numeric characters except +
-                $rowData['contact_no'] = preg_replace('/[^0-9+]/', '', $rowData['contact_no']);
+            // ===== LOAD SCHOOLS INTO CACHE =====
+            $schoolModel = new SchoolModel();
+            $allSchools = $schoolModel->findAll();
+            foreach ($allSchools as $school) {
+                $schoolCache[strtolower($school['name'])] = $school['id'];
             }
 
-            // ===== LRN VALIDATION =====
-            if (!empty($rowData['lrn_no'])) {
-                // Remove hyphens and validate it's 12 digits
-                $lrnClean = preg_replace('/[^0-9]/', '', $rowData['lrn_no']);
-                if (strlen($lrnClean) !== 12 || !is_numeric($lrnClean)) {
-                    continue; // Skip row with invalid LRN
-                }
-                $rowData['lrn_no'] = $lrnClean;
-            }
+            $db = \Config\Database::connect();
+            $rowsToInsert = [];
+            $rowsToUpdate = [];
+            $authUser = session()->get('auth_user');
+            $selectedSchool = $this->request->getPost('school_id');
+            // ===== PROCESS ROWS =====
+            for ($i = 1; $i < count($rows); $i++) {
+                $rowNum = $i + 1;
+                $rawRow = $rows[$i];
+                $rowData = [];
+                $rowErrors = [];
 
-            // ===== SEMESTERS VALIDATION =====
-            if (!empty($rowData['semesters_acquired'])) {
-                $semesters = (int)$rowData['semesters_acquired'];
-                if ($semesters < 1 || $semesters > 8) {
-                    $rowData['semesters_acquired'] = 1; // Default to 1 if invalid
-                }
-            }
+                // Map columns to database fields
+                foreach ($header as $key => $excelColumnName) {
+                    $excelColumnNameLower = strtolower(trim($excelColumnName));
+                    $dbFieldName = null;
 
-            // ===== REQUIRED FIELDS CHECK =====
-            if (
-                empty($rowData['school_id']) ||
-                empty($rowData['first_name']) ||
-                empty($rowData['last_name']) ||
-                empty($rowData['gender']) ||
-                empty($rowData['course']) ||
-                empty($rowData['year_level']) ||
-                empty($rowData['status']) ||
-                empty($rowData['date_of_birth']) ||
-                empty($rowData['contact_no']) ||
-                empty($rowData['address']) ||
-                empty($rowData['lrn_no']) ||
-                empty($rowData['voucher_no']) ||
-                empty($rowData['school_elementary']) ||
-                empty($rowData['school_junior']) ||
-                empty($rowData['school_senior_high'])
-            ) {
-                continue;
-            }
-
-            // ===== DUPLICATE VOUCHER/LRN CHECK =====
-            if (!empty($rowData['voucher_no'])) {
-                $existingVoucher = $model->where('voucher_no', $rowData['voucher_no'])->first();
-                if ($existingVoucher) {
-                    // Update if email matches
-                    if (!empty($rowData['email']) && $existingVoucher['email'] === $rowData['email']) {
-                        $model->update($existingVoucher['id'], $rowData);
+                    foreach ($columnMap as $excelCol => $dbCol) {
+                        if (strtolower($excelCol) === $excelColumnNameLower) {
+                            $dbFieldName = $dbCol;
+                            break;
+                        }
                     }
-                    continue;
-                }
-            }
 
-            if (!empty($rowData['lrn_no'])) {
-                $existingLRN = $model->where('lrn_no', $rowData['lrn_no'])->first();
-                if ($existingLRN) {
-                    // Update if email matches
-                    if (!empty($rowData['email']) && $existingLRN['email'] === $rowData['email']) {
-                        $model->update($existingLRN['id'], $rowData);
+                    // Always map the value, even if empty
+                    if ($dbFieldName) {
+                        $cellValue = $rawRow[$key] ?? '';
+                        $rowData[$dbFieldName] = is_string($cellValue) ? trim($cellValue) : $cellValue;
                     }
+                }
+
+                // ===== VALIDATE FIRST/LAST NAME =====
+                if (empty($rowData['first_name'])) {
+                    $rowErrors[] = 'Missing first name';
+                }
+                if (empty($rowData['last_name'])) {
+                    $rowErrors[] = 'Missing last name';
+                }
+
+                // ===== VALIDATE GENDER =====
+                if (empty($rowData['gender'])) {
+                    $rowErrors[] = 'Missing gender';
+                } else {
+                    $validGenders = ['male', 'female', 'other'];
+                    if (!in_array(strtolower($rowData['gender']), $validGenders)) {
+                        $rowErrors[] = "Invalid gender: {$rowData['gender']} (must be male, female, or other)";
+                    } else {
+                        $rowData['gender'] = strtolower($rowData['gender']);
+                    }
+                }
+
+                // ===== VALIDATE COURSE =====
+                if (empty($rowData['course'])) {
+                    $rowErrors[] = 'Missing course';
+                }
+
+                // ===== VALIDATE YEAR LEVEL =====
+                if (empty($rowData['year_level'])) {
+                    $rowErrors[] = 'Missing year level';
+                } else {
+                    $yearLevel = (int)$rowData['year_level'];
+                    if ($yearLevel < 1 || $yearLevel > 4) {
+                        $rowErrors[] = "Invalid year level: {$rowData['year_level']} (must be 1-4)";
+                    } else {
+                        $rowData['year_level'] = (string)$yearLevel; // Convert to string for model validation
+                    }
+                }
+
+                // ===== VALIDATE STATUS =====
+                if (empty($rowData['status'])) {
+                    $rowErrors[] = 'Missing status';
+                } else {
+                    $validStatuses = ['active', 'on-hold', 'graduated', 'disqualified'];
+                    if (!in_array(strtolower($rowData['status']), $validStatuses)) {
+                        $rowErrors[] = "Invalid status: {$rowData['status']} (must be active, on-hold, or graduated)";
+                    } else {
+                        $rowData['status'] = strtolower($rowData['status']);
+                    }
+                }
+
+                // ===== VALIDATE LRN NO =====
+                if (!empty($rowData['lrn_no'])) {
+
+                
+                    $lrnClean = preg_replace('/[^0-9]/', '', $rowData['lrn_no']);
+                    if (strlen($lrnClean) !== 12 || !is_numeric($lrnClean)) {
+                        $rowErrors[] = "Invalid LRN: must be 12 digits (got: {$rowData['lrn_no']})";
+                    } else {
+                        $rowData['lrn_no'] = $lrnClean;
+                    }
+                    
+                    if (isset($existingRecords['lrn'][$lrnClean])) {
+                        $rowErrors[] = "Duplicate LRN: {$lrnClean} already exists";
+                    }
+                } else {
+                    $rowErrors[] = 'Missing LRN number';
+                }
+
+                // ===== VALIDATE VOUCHER NO =====
+                if (empty($rowData['voucher_no'])) {
+                    $rowErrors[] = 'Missing voucher number';
+                } else {
+                    if (isset($existingRecords['voucher'][$rowData['voucher_no']])) {
+                        $rowErrors[] = "Duplicate voucher: {$rowData['voucher_no']} already exists";
+                    }
+                }
+
+                // ===== VALIDATE SEMESTERS =====
+                if (!empty($rowData['semesters_acquired'])) {
+                    $semesters = (int)$rowData['semesters_acquired'];
+                    if ($semesters < 1 || $semesters > 8) {
+                        $rowErrors[] = "Invalid semesters: {$rowData['semesters_acquired']} (must be 1-8)";
+                    } else {
+                        $rowData['semesters_acquired'] = $semesters;
+                    }
+                } else {
+                    $rowData['semesters_acquired'] = 1;
+                }
+
+                // ===== VALIDATE BIRTHDATE =====
+                if (!empty($rowData['date_of_birth'])) {
+                    try {
+                        if (is_numeric($rowData['date_of_birth'])) {
+                            $rowData['date_of_birth'] = date(
+                                'Y-m-d',
+                                Date::excelToTimestamp($rowData['date_of_birth'])
+                            );
+                        } else {
+                            $timestamp = strtotime($rowData['date_of_birth']);
+                            if ($timestamp === false) {
+                                $rowErrors[] = "Invalid birthdate format: {$rowData['date_of_birth']}";
+                            } else {
+                                $rowData['date_of_birth'] = date('Y-m-d', $timestamp);
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        $rowErrors[] = "Error parsing birthdate: {$rowData['date_of_birth']}";
+                    }
+                } else {
+                    $rowErrors[] = 'Missing birthdate';
+                }
+
+                // ===== FORMAT PHONE NUMBER =====
+                if (!empty($rowData['contact_no'])) {
+                    $rowData['contact_no'] = preg_replace('/[^0-9+]/', '', $rowData['contact_no']);
+                } else {
+                    $rowErrors[] = 'Missing contact number';
+                }
+
+                // ===== VALIDATE ADDRESS =====
+                if (empty($rowData['address'])) {
+                    $rowErrors[] = 'Missing address';
+                }
+
+                // ===== VALIDATE SCHOOLS =====
+                if (empty($rowData['school_elementary'])) {
+                    $rowErrors[] = 'Missing school (elementary)';
+                }
+                if (empty($rowData['school_junior'])) {
+                    $rowErrors[] = 'Missing school (junior)';
+                }
+                if (empty($rowData['school_senior_high'])) {
+                    $rowErrors[] = 'Missing school (senior high school)';
+                }
+
+                // ===== ASSIGN SCHOOL ID BASED ON ROLE =====
+                if ($authUser['role'] === 'staff') {
+
+                    if (!$selectedSchool) {
+                        $rowErrors[] = 'No school selected for import';
+                    } else {
+                        $rowData['school_id'] = $selectedSchool;
+                    }
+
+                } elseif (in_array($authUser['role'], ['school_admin', 'school_staff'])) {
+
+                    $rowData['school_id'] = $authUser['school_id'];
+
+                } else {
+
+                $rowErrors[] = 'No school assignment possible';
+
+                }
+
+                // ===== IF ERRORS, RECORD AND SKIP ROW =====
+                if (!empty($rowErrors)) {
+                    $importSummary['errors'][] = [
+                        'row' => $rowNum,
+                        'data' => $rawRow,
+                        'errors' => $rowErrors
+                    ];
+                    $importSummary['skipped']++;
+                    $importSummary['total_rows']++;
                     continue;
+                }
+
+                $importSummary['total_rows']++;
+
+                // ===== CHECK FOR DUPLICATES AND UPDATE OR INSERT =====
+                $isUpdate = false;
+                $updateId = null;
+
+                if (isset($existingRecords['email'][$rowData['email'] ?? ''])) {
+                    $updateId = $existingRecords['email'][$rowData['email']];
+                    $isUpdate = true;
+                }
+
+                if ($isUpdate) {
+                    $rowsToUpdate[] = [
+                        'id' => $updateId,
+                        'data' => $rowData
+                    ];
+                    $importSummary['updated']++;
+                } else {
+                    $rowsToInsert[] = $rowData;
+                    $importSummary['imported']++;
                 }
             }
 
-            // ===== DUPLICATE EMAIL CHECK =====
-            if (!empty($rowData['email'])) {
+            // DEBUG: Log summary before DB operations
+            log_message('debug', 'Import Summary: ' . json_encode($importSummary));
 
-                $existing = $model->where('email', $rowData['email'])->first();
+            // ===== BATCH INSERT RECORDS =====
+            $db->transStart();
 
-                if ($existing) {
-                    $model->update($existing['id'], $rowData);
-                    continue;
+            if (!empty($rowsToInsert)) {
+                log_message('debug', 'Inserting ' . count($rowsToInsert) . ' records');
+                log_message('debug', 'Sample row data: ' . json_encode($rowsToInsert[0] ?? []));
+                
+                // Temporarily disable validation since we already validated above
+                $scholarModel->skipValidation(true);
+                
+                $chunks = array_chunk($rowsToInsert, $batchSize);
+                foreach ($chunks as $chunk) {
+                    try {
+                        $result = $scholarModel->insertBatch($chunk);
+                        if (!$result) {
+                            $modelErrors = $scholarModel->errors();
+                            log_message('error', 'Batch insert failed. Model errors: ' . json_encode($modelErrors));
+                            log_message('error', 'DB Error: ' . $db->error()['message'] ?? 'No DB error');
+                        } else {
+                            log_message('debug', 'Batch inserted ' . count($chunk) . ' records successfully');
+                        }
+                    } catch (\Exception $e) {
+                        log_message('error', 'Exception during batch insert: ' . $e->getMessage());
+                    }
                 }
             }
 
-            $model->insert($rowData);
+            // ===== BATCH UPDATE RECORDS =====
+            if (!empty($rowsToUpdate)) {
+                log_message('debug', 'Updating ' . count($rowsToUpdate) . ' records');
+                foreach ($rowsToUpdate as $updateRecord) {
+                    $scholarModel->update($updateRecord['id'], $updateRecord['data']);
+                }
+            }
+
+            $transResult = $db->transComplete();
+            log_message('debug', 'Transaction result: ' . ($transResult ? 'Committed' : 'Failed'));
+
+            // ===== GENERATE ERROR REPORT IF THERE ARE ERRORS =====
+            $errorReportPath = null;
+            if (!empty($importSummary['errors'])) {
+                $errorReportPath = $this->generateErrorReport($importSummary['errors']);
+            }
+
+            return redirect()->to(site_url('scholars/import'))
+                ->with('success', $this->formatImportSummary($importSummary))
+                ->with('error_report_path', $errorReportPath);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Import Exception: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
+            log_message('error', 'Stack Trace: ' . $e->getTraceAsString());
+            
+            return redirect()->back()
+                ->with('error', 'Import failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Generate error report CSV file for failed rows
+     * @return string Path to the generated CSV file
+     */
+    private function generateErrorReport($errors)
+    {
+        try {
+            // Save to public/uploads for web access
+            $uploadsDir = FCPATH . 'uploads/';
+            
+            if (!is_dir($uploadsDir)) {
+                mkdir($uploadsDir, 0755, true);
+            }
+
+            $filename = 'scholar_import_errors_' . date('Y-m-d_H-i-s') . '.csv';
+            $filepath = $uploadsDir . $filename;
+
+            $file = fopen($filepath, 'w');
+            
+            if (!$file) {
+                log_message('error', 'Failed to create error report file: ' . $filepath);
+                return null;
+            }
+
+            // Write CSV header
+            fputcsv($file, ['Row Number', 'Error Messages', 'Original Data']);
+
+            // Write error rows
+            foreach ($errors as $error) {
+                $errorMessage = is_array($error['errors']) ? implode('; ', $error['errors']) : $error['errors'];
+                $originalData = is_array($error['data']) ? implode(' | ', array_filter($error['data'])) : '';
+                fputcsv($file, [$error['row'], $errorMessage, $originalData]);
+            }
+
+            fclose($file);
+            
+            log_message('debug', 'Error report generated: ' . $filepath);
+            
+            // Return download route URL
+            return site_url('scholars/download-error-report/' . $filename);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error generating report: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Format import summary for display message
+     * @return string Formatted summary message
+     */
+    private function formatImportSummary($summary)
+    {
+        $message = "✓ Import Complete!\n\n";
+        $message .= "Total Rows: {$summary['total_rows']}\n";
+        $message .= "Successfully Imported: {$summary['imported']}\n";
+        $message .= "Successfully Updated: {$summary['updated']}\n";
+        $message .= "Skipped (Errors): {$summary['skipped']}\n";
+
+        if (!empty($summary['errors'])) {
+            $message .= "\n⚠ {$summary['skipped']} rows had validation errors.";
+            $message .= " Check the error report for details.";
         }
 
-        $db->transComplete();
-
-        
-        return redirect()->to(site_url('scholars'))
-            ->with('message', 'Scholars imported successfully!');
+        return $message;
     }
 }
 

@@ -40,25 +40,40 @@ class ScholarModel extends Model
     
     // Validation rules
     protected $validationRules = [
-        'school_id'   => 'required|is_natural_no_zero',
-        'first_name'  => 'required|min_length[3]|max_length[100]',
-        'last_name'   => 'required|min_length[3]|max_length[100]',
-        'gender'      => 'required|in_list[male,female,other]',
-        'course'      => 'required|min_length[3]|max_length[100]',
-        'year_level'  => 'required|is_natural_no_zero',
-        'status'      => 'required|in_list[active,on-hold,graduated]',
-        'date_of_birth' => 'required|valid_date',
-        'email' => 'required|valid_email',
-        'semesters_acquired' => 'required|is_natural_no_zero|less_than_equal_to[8]',
-        'voucher_no' => 'required|min_length[3]|max_length[50]',
-        'name_extension' => 'permit_empty|in_list[,Jr.,Sr.,II,III,IV,V,VI,VII,VIII]',
-        'address' => 'required|min_length[10]|max_length[500]',
-        'contact_no' => 'required|min_length[10]|max_length[20]',
-        'lrn_no' => 'required|exact_length[12]|numeric',
-        'school_elementary' => 'required|min_length[3]|max_length[255]',
-        'school_junior' => 'required|min_length[3]|max_length[255]',
-        'school_senior_high' => 'required|min_length[3]|max_length[255]',
-    ];
+
+'school_id' => 'required|is_natural_no_zero',
+
+'first_name' => 'required|min_length[2]|max_length[100]',
+'last_name' => 'required|min_length[2]|max_length[100]',
+'middle_name' => 'permit_empty|max_length[100]',
+
+'gender' => 'required|in_list[male,female,other]',
+'course' => 'required|min_length[2]|max_length[100]',
+
+'year_level' => 'required|in_list[1,2,3,4]',
+
+'status' => 'required|in_list[active,on-hold,graduated,disqualified]',
+
+'date_of_birth' => 'required|valid_date',
+
+'email' => 'required|valid_email',
+
+'semesters_acquired' => 'required|is_natural_no_zero|less_than_equal_to[8]',
+
+'voucher_no' => 'required|min_length[3]|max_length[50]',
+
+'name_extension' => 'permit_empty|in_list[,Jr.,Sr.,II,III,IV,V,VI,VII,VIII]',
+
+'address' => 'required|min_length[10]|max_length[500]',
+'contact_no' => 'required|min_length[10]|max_length[20]',
+
+'lrn_no' => 'required|exact_length[12]|numeric',
+
+'school_elementary' => 'required|min_length[3]|max_length[255]',
+'school_junior' => 'required|min_length[3]|max_length[255]',
+'school_senior_high' => 'required|min_length[3]|max_length[255]',
+
+];
 
     
 
