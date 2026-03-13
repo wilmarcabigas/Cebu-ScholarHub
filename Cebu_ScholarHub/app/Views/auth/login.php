@@ -1,79 +1,192 @@
-<?= $this->extend('layouts/base') ?>
+<?= $this->extend('layouts/loginbase') ?>
 <?= $this->section('content') ?>
 
-<div class="min-h-[60vh] grid place-items-center">
-  <div class="w-full max-w-md">
-    <div class="bg-white shadow-sm ring-1 ring-gray-200 rounded-xl p-6">
-      <h1 class="text-xl font-semibold tracking-tight mb-1">Sign in</h1>
-      <p class="text-sm text-gray-500 mb-5">Use your issued account to access the platform.</p>
+<?php
+  $session = session();
 
-      <?php if (session()->getFlashdata('error')): ?>
-        <div class="mb-4 rounded-md bg-red-50 p-3 ring-1 ring-red-200 text-sm text-red-700">
-          <?= esc(session()->getFlashdata('error')) ?>
-        </div>
-      <?php endif; ?>
-      <?php if (session()->getFlashdata('message')): ?>
-        <div class="mb-4 rounded-md bg-green-50 p-3 ring-1 ring-green-200 text-sm text-green-700">
-          <?= esc(session()->getFlashdata('message')) ?>
-        </div>
-      <?php endif; ?>
+  $verifyMode = $session->getFlashdata('verify_mode') || $session->get('pending_login_user_id');
+  $unlockMode = $session->getFlashdata('unlock_mode');
 
-      <form method="post" action="<?= site_url('login') ?>" class="space-y-4">
-        <?= csrf_field() ?>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input
-            id="email" name="email" type="email" value="<?= old('email') ?>" placeholder="INPUT EMAIL"
-            class="mt-1 p-2 border border-gray-300 rounded-md w-full"
-            aria-label="Email" required
-          >
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <div class="relative">
-            <input
-              id="password" name="password" type="password" placeholder="INPUT PASSWORD"
-              class="mt-1 p-2 border border-gray-300 rounded-md w-full"
-              required
-            >
-            <button type="button" id="togglePassword" aria-pressed="false" class="absolute inset-y-0 right-0 px-3 flex items-center text-sm text-black font-medium" aria-label="Show password">Show</button>
-          </div>
-        </div>
+  $lockedEmail = $session->getFlashdata('locked_email') ?? old('email') ?? '';
+  $pendingEmail = $session->get('pending_login_email') ?? '';
+?>
 
-        <button
-          class="w-full inline-flex justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          Login
-        </button>
-      </form>
+<div class="text-white">
 
-      <!--<p class="text-xs text-gray-500 mt-4">
-        Demo: <span class="font-mono">admin@cebu-scholar.gov</span> / <span class="font-mono">secret123</span>
-      </p>-->
+  <!-- Header -->
+  <div class="mb-7 text-center">
+    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10 shadow-lg backdrop-blur-xl">
+      <svg class="h-8 w-8 text-cyan-300" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 0h12a2 2 0 002-2v-5a2 2 0 00-2-2h-1V7a5 5 0 00-10 0v1H6a2 2 0 00-2 2v5a2 2 0 002 2z"/>
+      </svg>
     </div>
-  </div>
-</div>
 
-<script>
-  (function(){
-    var pw = document.getElementById('password');
-    var btn = document.getElementById('togglePassword');
-    if (!pw || !btn) return;
-    btn.setAttribute('aria-pressed', 'false');
-    btn.addEventListener('click', function(){
-      var showing = pw.type === 'text';
-      if (!showing) {
-        pw.type = 'text';
-        btn.textContent = 'Hide';
-        btn.setAttribute('aria-pressed', 'true');
-        btn.setAttribute('aria-label', 'Hide password');
-      } else {
-        pw.type = 'password';
-        btn.textContent = 'Show';
-        btn.setAttribute('aria-pressed', 'false');
-        btn.setAttribute('aria-label', 'Show password');
-      }
-    });
-  })();
-</script>
+    <?php if ($unlockMode): ?>
+      <h1 class="text-2xl font-bold tracking-tight text-white">Unlock Account</h1>
+      <p class="mt-2 text-sm leading-6 text-slate-300">
+        Your account was locked after 3 failed attempts. Enter the unlock code sent to your Gmail.
+      </p>
+    <?php elseif ($verifyMode): ?>
+      <h1 class="text-2xl font-bold tracking-tight text-white">OTP Verification</h1>
+      <p class="mt-2 text-sm leading-6 text-slate-300">
+        Enter the verification code sent to your Gmail to continue login.
+      </p>
+    <?php else: ?>
+      <h1 class="text-2xl font-bold tracking-tight text-white">Sign in</h1>
+      <p class="mt-2 text-sm leading-6 text-slate-300">
+        Use your issued account to access the platform.
+      </p>
+    <?php endif; ?>
+  </div>
+
+  <!-- Flash messages -->
+  <?php if (session()->getFlashdata('message')): ?>
+    <div class="mb-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-200 backdrop-blur-md">
+      <?= esc(session()->getFlashdata('message')) ?>
+    </div>
+  <?php endif; ?>
+
+  <?php if (session()->getFlashdata('error')): ?>
+    <div class="mb-4 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200 backdrop-blur-md">
+      <?= esc(session()->getFlashdata('error')) ?>
+    </div>
+  <?php endif; ?>
+
+  <!-- NORMAL LOGIN -->
+  <?php if (! $unlockMode && ! $verifyMode): ?>
+    <form method="post" action="<?= site_url('login') ?>" class="space-y-5">
+      <?= csrf_field() ?>
+
+      <div>
+        <label for="email" class="mb-2 block text-sm font-medium text-slate-200">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value="<?= old('email') ?>"
+          class="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-slate-400 outline-none backdrop-blur-xl transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/30"
+          required
+        >
+      </div>
+
+      <div>
+        <label for="password" class="mb-2 block text-sm font-medium text-slate-200">Password</label>
+        <input
+          type="password"
+          name="password"
+          id="password"
+          required
+          class="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-slate-400 outline-none backdrop-blur-xl transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/30"
+        >
+        <p class="mt-2 text-xs leading-5 text-slate-400">
+          Enter your password, then the system will send a verification code to your Gmail.
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full inline-flex justify-center rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+      >
+        Verify
+      </button>
+    </form>
+  <?php endif; ?>
+
+  <!-- UNLOCK ACCOUNT -->
+  <?php if ($unlockMode): ?>
+    <form method="post" action="<?= site_url('unlock') ?>" class="space-y-5">
+      <?= csrf_field() ?>
+
+      <div>
+        <label for="email" class="mb-2 block text-sm font-medium text-slate-200">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value="<?= esc($lockedEmail) ?>"
+          class="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-slate-400 outline-none backdrop-blur-xl transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/30"
+          required
+        >
+      </div>
+
+      <div>
+        <label for="unlock_code" class="mb-2 block text-sm font-medium text-slate-200">Unlock Code</label>
+        <input
+          type="text"
+          name="unlock_code"
+          id="unlock_code"
+          maxlength="6"
+          pattern="\d{6}"
+          placeholder="Enter 6-digit unlock code"
+          class="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-slate-400 outline-none backdrop-blur-xl transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/30"
+          required
+        >
+        <p class="mt-2 text-xs leading-5 text-slate-400">
+          Your account is locked after 3 failed attempts. Enter the Gmail unlock code.
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full inline-flex justify-center rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-400/40"
+      >
+        Unlock Account
+      </button>
+    </form>
+  <?php endif; ?>
+
+  <!-- VERIFY LOGIN CODE -->
+  <?php if ($verifyMode): ?>
+    <form method="post" action="<?= site_url('login/verify-code') ?>" class="space-y-5" id="verifyForm">
+      <?= csrf_field() ?>
+
+      <div>
+        <label for="verify_email" class="mb-2 block text-sm font-medium text-slate-200">Email</label>
+        <input
+          id="verify_email"
+          type="email"
+          value="<?= esc($pendingEmail) ?>"
+          class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-300 outline-none backdrop-blur-xl"
+          readonly
+        >
+      </div>
+
+      <div>
+        <label for="code" class="mb-2 block text-sm font-medium text-slate-200">Verification Code</label>
+        <input
+          type="text"
+          name="code"
+          id="code"
+          maxlength="6"
+          pattern="\d{6}"
+          placeholder="Enter 6-digit verification code"
+          class="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder-slate-400 outline-none backdrop-blur-xl transition focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/30"
+          required
+        >
+        <p class="mt-2 text-xs leading-5 text-slate-400">
+          Enter the verification code sent to your Gmail before accessing the dashboard.
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        class="w-full inline-flex justify-center rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+      >
+        Login
+      </button>
+    </form>
+
+    <form method="post" action="<?= site_url('login/resend-code') ?>" class="mt-4">
+      <?= csrf_field() ?>
+      <button
+        type="submit"
+        class="w-full inline-flex justify-center rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 backdrop-blur-xl transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
+      >
+        Resend Code
+      </button>
+    </form>
+  <?php endif; ?>
+
+</div>
 
 <?= $this->endSection() ?>

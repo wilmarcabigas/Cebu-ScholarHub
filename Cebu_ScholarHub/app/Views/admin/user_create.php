@@ -49,10 +49,24 @@
 
                 <!-- Password field -->
                 <div class="col-span-6 sm:col-span-4">
-                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" name="password" id="password" required
-                        class="mt-1 p-2 border border-gray-300 rounded-md w-full">
-                </div>
+    <label for="password" class="block text-sm font-medium text-gray-700">
+        Password
+    </label>
+
+    <input 
+        type="password" 
+        name="password" 
+        id="password" 
+        required
+        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$"
+        title="Password must be at least 8 characters and include uppercase, lowercase, number & special character"
+        class="mt-1 p-2 border border-gray-300 rounded-md w-full"
+    >
+
+    <p class="text-xs text-gray-500 mt-1">
+        Minimum 8 characters. Must include uppercase, lowercase, number & special character.
+    </p>
+</div>
 
                 <!-- Full Name field -->
                 <div class="col-span-6 sm:col-span-4">

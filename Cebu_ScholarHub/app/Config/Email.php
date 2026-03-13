@@ -6,8 +6,8 @@ use CodeIgniter\Config\BaseConfig;
 
 class Email extends BaseConfig
 {
-    public string $fromEmail  = '';
-    public string $fromName   = '';
+    public string $fromEmail  = 'jamestrocio842@gmail.com';
+    public string $fromName   = 'ScholarHub System';
     public string $recipients = '';
 
     /**
@@ -16,39 +16,39 @@ class Email extends BaseConfig
     public string $userAgent = 'CodeIgniter';
 
     /**
-     * The mail sending protocol: mail, sendmail, smtp
+     * The mail sending protocol
      */
-    public string $protocol = 'mail';
+    public string $protocol = 'smtp';
 
     /**
-     * The server path to Sendmail.
+     * The server path to Sendmail
      */
     public string $mailPath = '/usr/sbin/sendmail';
 
     /**
      * SMTP Server Hostname
      */
-    public string $SMTPHost = '';
+    public string $SMTPHost = 'smtp.gmail.com';
 
     /**
      * SMTP Username
      */
-    public string $SMTPUser = '';
+    public string $SMTPUser = 'jamestrocio842@gmail.com';
 
     /**
-     * SMTP Password
+     * SMTP Password (Gmail App Password)
      */
-    public string $SMTPPass = '';
+    public string $SMTPPass = 'mnrw vxns kplo gtwl';
 
     /**
      * SMTP Port
      */
-    public int $SMTPPort = 25;
+    public int $SMTPPort = 587;
 
     /**
-     * SMTP Timeout (in seconds)
+     * SMTP Timeout
      */
-    public int $SMTPTimeout = 5;
+    public int $SMTPTimeout = 4;
 
     /**
      * Enable persistent SMTP connections
@@ -56,11 +56,7 @@ class Email extends BaseConfig
     public bool $SMTPKeepAlive = false;
 
     /**
-     * SMTP Encryption.
-     *
-     * @var string '', 'tls' or 'ssl'. 'tls' will issue a STARTTLS command
-     *             to the server. 'ssl' means implicit SSL. Connection on port
-     *             465 should set this to ''.
+     * SMTP Encryption
      */
     public string $SMTPCrypto = 'tls';
 
@@ -75,12 +71,12 @@ class Email extends BaseConfig
     public int $wrapChars = 76;
 
     /**
-     * Type of mail, either 'text' or 'html'
+     * Type of mail
      */
-    public string $mailType = 'text';
+    public string $mailType = 'html';
 
     /**
-     * Character set (utf-8, iso-8859-1, etc.)
+     * Character set
      */
     public string $charset = 'UTF-8';
 
@@ -90,22 +86,22 @@ class Email extends BaseConfig
     public bool $validate = false;
 
     /**
-     * Email Priority. 1 = highest. 5 = lowest. 3 = normal
+     * Email Priority
      */
     public int $priority = 3;
 
     /**
-     * Newline character. (Use “\r\n” to comply with RFC 822)
+     * Newline character
      */
     public string $CRLF = "\r\n";
 
     /**
-     * Newline character. (Use “\r\n” to comply with RFC 822)
+     * Newline character
      */
     public string $newline = "\r\n";
 
     /**
-     * Enable BCC Batch Mode.
+     * Enable BCC Batch Mode
      */
     public bool $BCCBatchMode = false;
 

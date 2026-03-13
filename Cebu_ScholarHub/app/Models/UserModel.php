@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Models;
+
 use CodeIgniter\Model;
 
 class UserModel extends Model
@@ -7,29 +9,34 @@ class UserModel extends Model
     protected $table = 'users';
     protected $primaryKey = 'id';
     protected $useSoftDeletes = true;
-    protected $allowedFields = [
-    'email', 
-    'password_hash', 
-    'full_name', 
-    'role', 
-    'school_id',
-    'status',
-    'last_login_at',
-    'created_at',
-    'updated_at',
-    'deleted_at'
-];
 
-protected $useTimestamps = true;
-protected $createdField = 'created_at';
-protected $updatedField = 'updated_at';
-protected $deletedField = 'deleted_at';
-    
+    protected $allowedFields = [
+        'email',
+        'password_hash',
+        'full_name',
+        'role',
+        'school_id',
+        'status',
+        'last_login_at',
+        'failed_attempts',
+        'unlock_code',
+        'login_code',
+        'login_code_expires_at',
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+
+    protected $useTimestamps = true;
+    protected $createdField = 'created_at';
+    protected $updatedField = 'updated_at';
+    protected $deletedField = 'deleted_at';
+
     protected $validationRules = [
-        'email' => 'required|valid_email|is_unique[users.email,id,{id}]',
+        'email'     => 'required|valid_email|is_unique[users.email,id,{id}]',
         'full_name' => 'required|min_length[2]',
-        'role' => 'required|in_list[admin,staff,school_admin,school_staff,scholar]',
-        'status' => 'permit_empty|in_list[active,inactive]'
+        'role'      => 'required|in_list[admin,staff,school_admin,school_staff,scholar]',
+        'status'    => 'permit_empty|in_list[active,inactive]'
     ];
 
     protected $beforeInsert = ['hashPassword'];
@@ -37,7 +44,7 @@ protected $deletedField = 'deleted_at';
 
     protected function hashPassword(array $data)
     {
-        if (!isset($data['data']['password'])) {
+        if (! isset($data['data']['password']) || $data['data']['password'] === '') {
             return $data;
         }
 
@@ -50,22 +57,35 @@ protected $deletedField = 'deleted_at';
     public function findActiveByEmail(string $email): ?array
     {
         return $this->where('email', $email)
-                   ->where('status', 'active')
-                   ->first();
+            ->where('status', 'active')
+            ->first();
+    }
+
+    public function findByUnlockCode(string $code): ?array
+    {
+        return $this->where('unlock_code', $code)->first();
+    }
+
+    public function resetFailedAttempts(int $userId)
+    {
+        return $this->update($userId, [
+            'failed_attempts' => 0,
+            'unlock_code'     => null
+        ]);
     }
 
     public function getUsersWithSchool()
     {
         return $this->select('users.*, schools.name as school_name')
-                   ->join('schools', 'schools.id = users.school_id', 'left')
-                   ->findAll();
+            ->join('schools', 'schools.id = users.school_id', 'left')
+            ->findAll();
     }
-     public function getUserById(int $id): ?array
+
+    public function getUserById(int $id): ?array
     {
         return $this->select('users.*, schools.name as school_name')
-                   ->join('schools', 'schools.id = users.school_id', 'left')
-                   ->where('users.id', $id)
-                   ->first();
+            ->join('schools', 'schools.id = users.school_id', 'left')
+            ->where('users.id', $id)
+            ->first();
     }
-    
 }
