@@ -14,8 +14,7 @@ $routes->get('/', fn() => redirect()->to('dashboard'));
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
     // Dashboard - will handle role-based redirection
     $routes->get('dashboard', 'Dashboard::index');
-
-
+    $routes->get('dashboard/live-stats', 'Dashboard::liveStats', ['filter' => 'auth']);
     // Admin routes
     $routes->group('admin', ['filter' => 'role:admin,staff'], static function ($routes) {
         $routes->get('users', 'UsersController::index');

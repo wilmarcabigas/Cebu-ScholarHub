@@ -73,7 +73,7 @@ class Dashboard extends BaseController
 
                     'new_applications' =>
                         $this->scholarModel->where('created_at >=', date('Y-m-d', strtotime('-7 days')))
-                                        ->countAllResults(),
+                                           ->countAllResults(),
 
                     'school_updates' =>
                         $this->billingModel->countAllResults(),
@@ -88,66 +88,68 @@ class Dashboard extends BaseController
 
 
             /* ================= SCHOOL ADMIN ================= */
-           case 'school_admin':
-    $data['stats'] = [
+            case 'school_admin':
 
-        'active_scholars' =>
-            $this->scholarModel
-                ->where('school_id', $user['school_id'])
-                ->countAllResults(),
+                $data['stats'] = [
+                    'active_scholars' =>
+                        $this->scholarModel
+                            ->where('school_id', $user['school_id'])
+                            ->countAllResults(),
 
-        'pending_bills' =>
-            $this->billingModel
-                ->select('bills.*')
-                ->join('scholars', 'scholars.id = bills.scholar_id')
-                ->where('scholars.school_id', $user['school_id'])
-                ->where('bills.status', 'pending')
-                ->countAllResults(),
+                    'pending_bills' =>
+                        $this->billingModel
+                            ->select('bills.*')
+                            ->join('scholars', 'scholars.id = bills.scholar_id')
+                            ->where('scholars.school_id', $user['school_id'])
+                            ->where('bills.status', 'pending')
+                            ->countAllResults(),
 
-        'pending_approval' =>
-            $this->billingModel
-                ->select('bills.*')
-                ->join('scholars', 'scholars.id = bills.scholar_id')
-                ->where('scholars.school_id', $user['school_id'])
-                ->where('bills.status', 'pending')
-                ->countAllResults(),
+                    'pending_approval' =>
+                        $this->billingModel
+                            ->select('bills.*')
+                            ->join('scholars', 'scholars.id = bills.scholar_id')
+                            ->where('scholars.school_id', $user['school_id'])
+                            ->where('bills.status', 'pending')
+                            ->countAllResults(),
 
-        'messages' =>
-            $this->messageModel
-                ->where('receiver_id', $user['id'])
-                ->where('is_read', 0)
-                ->countAllResults()
-    ];
+                    'messages' =>
+                        $this->messageModel
+                            ->where('receiver_id', $user['id'])
+                            ->where('is_read', 0)
+                            ->countAllResults()
+                ];
 
                 return view('dashboard/school_admin', $data);
 
 
             /* ================= SCHOOL STAFF ================= */
             case 'school_staff':
-                $schoolId = $user['school_id'];
-                
-                $data['stats'] = [
-                     // ✅ Active scholars of this school
-        'active_scholars' =>
-            $this->scholarModel
-                 ->where('school_id', $schoolId)
-                 ->where('status', 'active')
-                 ->countAllResults(),
 
-        // ✅ Pending bills of this school
-        'pending_bills' =>
-            $this->billingModel
-                 ->select('bills.*')
-                 ->join('scholars', 'scholars.id = bills.scholar_id')
-                 ->where('scholars.school_id', $schoolId)
-                 ->where('bills.status', 'pending')
-                 ->countAllResults(),
-        'messages' =>
-            $this->messageModel
-                ->where('receiver_id', $user['id'])
-                ->where('is_read', 0)
-                ->countAllResults(),
-        'requirements_due' => 0
+                $schoolId = $user['school_id'];
+
+                $data['stats'] = [
+
+                    'active_scholars' =>
+                        $this->scholarModel
+                             ->where('school_id', $schoolId)
+                             ->where('status', 'active')
+                             ->countAllResults(),
+
+                    'pending_bills' =>
+                        $this->billingModel
+                             ->select('bills.*')
+                             ->join('scholars', 'scholars.id = bills.scholar_id')
+                             ->where('scholars.school_id', $schoolId)
+                             ->where('bills.status', 'pending')
+                             ->countAllResults(),
+
+                    'messages' =>
+                        $this->messageModel
+                            ->where('receiver_id', $user['id'])
+                            ->where('is_read', 0)
+                            ->countAllResults(),
+
+                    'requirements_due' => 0
                 ];
 
                 return view('dashboard/school_staff', $data);
@@ -155,6 +157,7 @@ class Dashboard extends BaseController
 
             /* ================= SCHOLAR ================= */
             case 'scholar':
+
                 $data['scholar_data'] =
                     $this->userModel->select('users.*, schools.name as school_name')
                                     ->join('schools', 'schools.id = users.school_id', 'left')
@@ -166,4 +169,41 @@ class Dashboard extends BaseController
                 return redirect()->to('logout');
         }
     }
+
+
+    /* =====================================================
+       LIVE SYSTEM SUMMARY (ADDED — DOES NOT CHANGE LOGIC)
+       ===================================================== */
+
+    public function liveStats()
+    {
+        $user = auth_user();
+
+        if (!$user) {
+            return $this->response->setJSON(['error' => 'Unauthorized']);
+        }
+
+        $stats = [
+            'total_scholars' =>
+                $this->scholarModel->where('status', 'active')->countAllResults(),
+
+            'active_schools' =>
+                $this->schoolModel->countAllResults(),
+
+            'pending_bills' =>
+                $this->billingModel->where('status', 'pending')->countAllResults(),
+
+            'messages' =>
+                $this->messageModel
+                    ->where('receiver_id', $user['id'])
+                    ->where('is_read', 0)
+                    ->countAllResults()
+        ];
+
+        return $this->response->setJSON([
+    'status' => 'success',
+    'stats' => $stats
+]);
+    }
+
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 21, 2025 at 07:07 AM
+-- Generation Time: Mar 07, 2026 at 04:54 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -63,12 +63,12 @@ CREATE TABLE `bills` (
 
 CREATE TABLE `messages` (
   `id` int(10) UNSIGNED NOT NULL,
-  `sender_id` int(10) UNSIGNED NOT NULL,
-  `receiver_id` int(10) UNSIGNED NOT NULL,
-  `subject` varchar(150) NOT NULL,
-  `message_body` text NOT NULL,
+  `sender_id` int(11) UNSIGNED NOT NULL,
+  `receiver_id` int(11) UNSIGNED NOT NULL,
+  `subject` varchar(150) DEFAULT NULL,
+  `message` text NOT NULL,
   `is_read` tinyint(1) NOT NULL DEFAULT 0,
-  `sent_at` datetime NOT NULL DEFAULT current_timestamp()
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -190,10 +190,13 @@ CREATE TABLE `schools` (
 --
 
 INSERT INTO `schools` (`id`, `name`, `code`, `created_at`, `updated_at`, `deleted_at`, `address`, `contact_person`, `contact_email`, `contact_number`) VALUES
-(1, 'Cebu Eastern College', 'CEC', '2025-09-16 13:05:26', '2025-12-19 03:18:48', '2025-12-19 03:18:48', '', '', '', ''),
+(1, 'Cebu Eastern College', 'CEC', '2026-03-07 03:29:00', '2025-12-19 03:18:48', '2025-12-19 03:18:48', '', '', '', ''),
 (2, 'University of San Jose–Recoletos', 'usjr', '2025-12-16 10:16:19', '2025-12-19 03:07:37', '2025-12-19 03:07:37', '', '', '', ''),
 (3, 'Cebu Eastern College', 'cec', '2025-12-19 03:09:12', '2025-12-19 03:13:32', '2025-12-19 03:13:32', 'lowersouthhillstisa cebu city ', 'wilmar', 'wcabigas@gmail.com', '0912534234'),
-(4, 'Cebu Eastern College', 'cece', '2025-12-19 03:14:08', '2025-12-19 05:23:23', NULL, 'asdasdasd', 'james', 'j@gmail.com', '0912352345235');
+(4, 'Cebu Eastern College', 'cece', '2025-12-19 03:14:08', '2025-12-19 05:23:23', NULL, 'asdasdasd', 'james', 'j@gmail.com', '0912352345235'),
+(5, 'Cebu Eastern College', 'CEC', '2026-03-03 06:24:32', '2026-03-03 06:42:47', '2026-03-03 06:42:47', '', '', '', ''),
+(6, 'Cebu Eastern College', 'CEC', '2026-03-03 06:24:56', '2026-03-03 06:42:45', '2026-03-03 06:42:45', '', '', '', ''),
+(7, 'Cebu Eastern College', 'CEC', '2026-03-03 06:25:08', '2026-03-03 06:42:41', '2026-03-03 06:42:41', '', '', '', '');
 
 -- --------------------------------------------------------
 
@@ -212,20 +215,33 @@ CREATE TABLE `users` (
   `last_login_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
-  `deleted_at` datetime DEFAULT NULL
+  `deleted_at` datetime DEFAULT NULL,
+  `failed_attempts` int(11) DEFAULT 0,
+  `unlock_code` varchar(10) DEFAULT NULL,
+  `login_code` varchar(6) DEFAULT NULL,
+  `login_code_expires_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `password_hash`, `full_name`, `role`, `school_id`, `status`, `last_login_at`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'admin@cebu-scholar.gov', '$2y$10$7w8oE.IHuZfD/ffkeZrfP.BmYi4xq2BERYieQregKKUNjJFkYkkWa', 'System Admin', 'admin', NULL, 'active', '2025-12-18 10:28:47', '2025-09-16 13:05:26', '2025-12-18 10:28:47', NULL),
-(2, 'staff@cebu-scholar.gov', '$2y$10$r5VtWVhgaHFSfcNn9AXJ8OfmD8wc4lggOzUlWb4CwYBzc6nxIf8UW', 'Office Staff', 'staff', NULL, 'active', '2025-12-19 02:47:09', '2025-09-16 13:05:26', '2025-12-19 02:47:09', NULL),
-(3, 'schooladmin@cec.edu.ph', '$2y$10$MGKyAhWx35SKgVAh1B4awublLaB9Sh4agWyrIuJPZZqlmVXgLYILW', 'CEC School Admin', 'school_admin', 1, 'active', '2025-10-27 03:47:40', '2025-09-16 13:05:26', '2025-10-27 03:47:40', NULL),
-(4, 'schoolstaff@cec.edu.ph', '$2y$10$WF4bgD/bX882dZzbDHXqEuUR15YNrnV5MlEUE4DdmybrnfJ439mVy', 'CEC School Staff', 'school_staff', NULL, 'active', '2025-12-16 11:39:41', '2025-09-16 13:05:26', '2025-12-16 11:39:41', NULL),
-(5, 'scholar1@students.ph', '$2y$10$KzHeJQTcdK13J9nyCLeeTuumBUwculPTq4hwxx.DR/FssZb8pYImG', 'Juan Dela Cruz', 'scholar', NULL, 'active', '2025-09-16 13:31:35', '2025-09-16 13:05:26', '2025-09-16 13:31:35', NULL),
-(6, 'asd@gmail.com', '', 'asd asd ', 'admin', NULL, 'active', NULL, '2025-10-03 11:47:06', '2025-10-03 11:47:21', '2025-10-03 11:47:21');
+INSERT INTO `users` (`id`, `email`, `password_hash`, `full_name`, `role`, `school_id`, `status`, `last_login_at`, `created_at`, `updated_at`, `deleted_at`, `failed_attempts`, `unlock_code`, `login_code`, `login_code_expires_at`) VALUES
+(2, 'staff@cebu-scholar.gov', '$2y$10$3RnwkVyz82094NH7NsScsevU4PkevFh41ku9CNiJSxOXf7ymLDT7G', 'Office Staff', 'staff', NULL, 'active', '2026-03-03 06:47:58', '2026-03-03 06:40:24', '2026-03-03 06:47:58', NULL, 0, NULL, NULL, NULL),
+(3, 'schooladmin@cec.edu.ph', '$2y$10$40cFh0LKOLnhjDicBFCyOObO5N3PjKzuqgM/W7wr8654wHMWDxhMe', 'CEC School Admin', 'school_admin', 1, 'active', '2025-10-27 03:47:40', '2026-03-07 03:29:00', '2026-03-03 05:30:35', '2026-03-03 05:30:35', 0, NULL, NULL, NULL),
+(4, 'schoolstaff@cec.edu.ph', '$2y$10$WS7PjhCdBLTYDCBn7jUBXe0RIiUnIxV0Sz52vfHE8lRqJQs0V2sUe', 'CEC School Staff', 'school_staff', 1, 'active', '2025-12-16 11:39:41', '2026-03-07 03:29:00', '2026-03-03 06:59:43', '2026-03-03 06:59:43', 0, NULL, NULL, NULL),
+(5, 'scholar1@students.ph', '$2y$10$2AqYjpfnXE4PxKUseZ/KW.X2wVcpiXqowDS4r8Bdsd5gGB/xoL2ly', 'Juan Dela Cruz', 'scholar', NULL, 'active', '2025-09-16 13:31:35', '2026-03-07 03:29:01', '2026-03-03 06:59:25', '2026-03-03 06:59:25', 0, NULL, NULL, NULL),
+(6, 'asd@gmail.com', '', 'asd asd ', 'admin', NULL, 'active', NULL, '2025-10-03 11:47:06', '2025-10-03 11:47:21', '2025-10-03 11:47:21', 0, NULL, NULL, NULL),
+(7, 'james123@gmail.com', '', 'james lagnas', 'school_admin', 4, 'active', NULL, '2026-03-03 05:29:06', '2026-03-03 05:30:25', '2026-03-03 05:30:25', 0, NULL, NULL, NULL),
+(8, 'JamesLagnas@cebueasterncollege.edu.ph', '', 'james lagnas', 'school_admin', 4, 'active', NULL, '2026-03-03 05:31:55', '2026-03-03 05:33:36', '2026-03-03 05:33:36', 0, NULL, NULL, NULL),
+(9, 'Jamesladas@cebueasterncollege.edu.ph', '', 'james lagnas', 'school_admin', 4, 'active', NULL, '2026-03-03 05:34:51', '2026-03-03 06:59:01', '2026-03-03 06:59:01', 0, NULL, NULL, NULL),
+(10, 'James@cebueasterncollege.edu.ph', '$2y$10$wxEwWr3uDRU3/Oj./KPTL.QMBooWGXQ6URM.ON3HE/xQq1PrnwRc2', 'james lagnas', 'school_admin', 4, 'active', NULL, '2026-03-03 05:45:06', '2026-03-03 06:59:05', '2026-03-03 06:59:05', 0, NULL, NULL, NULL),
+(11, 'wilmar@gmail.com', '$2y$10$qD6EgQon0HpFGQRIo5SGZOSP0dcoorQhJdY5sm.vhKOj2ju.1Mrf6', 'wilmarcabigas', 'school_staff', 4, 'active', NULL, '2026-03-03 05:51:28', '2026-03-03 06:59:56', '2026-03-03 06:59:56', 0, NULL, NULL, NULL),
+(12, 'kenjie123@gmail.com', '$2y$10$IQj.ibqm24c.ZAG1laln0OxRnhMtEAsuf4/EkjIsE/dUGITKjBWdC', 'Kenjie Pugoy', 'school_staff', 4, 'active', '2026-03-03 06:55:45', '2026-03-03 05:52:44', '2026-03-03 06:55:45', NULL, 0, NULL, NULL, NULL),
+(23, 'wilmarshs@gmail.com', '$2y$10$V7vaQhbhuZE2At5uFwhqhe6NGJtPeHxQ1FTElqyuQ4Sp6HecF96Ga', 'wilmarcabigas', 'school_admin', 4, 'active', '2026-03-03 07:02:00', '2026-03-03 07:01:37', '2026-03-05 14:04:52', NULL, 3, '845863', NULL, NULL),
+(27, 'cwilmar.shs@gmail.com', '$2y$10$wnf1JtEarlXLnRA0Rdx4g.2vXw5KUBJs6aVCx1DohFKESluVl2TgG', 'wilmar cabigas', 'school_admin', 4, 'active', '2026-03-05 14:12:08', '2026-03-05 14:04:30', '2026-03-05 14:12:59', NULL, 0, NULL, NULL, NULL),
+(28, 'jamestrocio842@gmail.com', '$2y$10$wIfMcD1xgcWHVZ.ju7UOtOr6qfDrofunFIU.4zMYItEDocu49f6IO', 'System Admin', 'admin', NULL, 'active', '2026-03-07 03:46:06', '2026-03-07 03:29:00', '2026-03-07 03:46:06', NULL, 0, NULL, NULL, NULL),
+(29, 'trocioj914@gmail.com', '$2y$10$8fZhIWyU72tFX/wuQd0eyufpMePEAl3Ym32WCzWY40RESrEdo4lv6', 'Office Staff', 'staff', NULL, 'active', NULL, '2026-03-07 03:29:00', NULL, NULL, 0, NULL, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -245,14 +261,6 @@ ALTER TABLE `bills`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_bills_scholar` (`scholar_id`),
   ADD KEY `fk_bills_posted_by` (`posted_by`);
-
---
--- Indexes for table `messages`
---
-ALTER TABLE `messages`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_messages_sender` (`sender_id`),
-  ADD KEY `fk_messages_receiver` (`receiver_id`);
 
 --
 -- Indexes for table `migrations`
@@ -313,12 +321,6 @@ ALTER TABLE `bills`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `messages`
---
-ALTER TABLE `messages`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
@@ -346,13 +348,13 @@ ALTER TABLE `scholars`
 -- AUTO_INCREMENT for table `schools`
 --
 ALTER TABLE `schools`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- Constraints for dumped tables
@@ -370,13 +372,6 @@ ALTER TABLE `audit_logs`
 ALTER TABLE `bills`
   ADD CONSTRAINT `fk_bills_posted_by` FOREIGN KEY (`posted_by`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `fk_bills_scholar` FOREIGN KEY (`scholar_id`) REFERENCES `scholars` (`id`);
-
---
--- Constraints for table `messages`
---
-ALTER TABLE `messages`
-  ADD CONSTRAINT `fk_messages_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `fk_messages_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`);
 
 --
 -- Constraints for table `notifications`

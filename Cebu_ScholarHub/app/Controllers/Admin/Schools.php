@@ -48,8 +48,6 @@ public function index()
 }
 
 
-
-
     // Show form to create a school
     public function create()
     {

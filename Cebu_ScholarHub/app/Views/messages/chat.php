@@ -9,7 +9,7 @@
             Chat
         </h1>
         <p class="mt-1 text-sm text-gray-500">
-            Conversation with <?= esc($otherUser['name'] ?? $otherUser['email'] ?? 'User') ?>
+            Conversation with <?= esc($otherUser['name'] ?? $otherUser['role'] ?? 'User') ?>
         </p>
     </header>
 
