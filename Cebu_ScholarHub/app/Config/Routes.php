@@ -15,6 +15,16 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     // Dashboard - will handle role-based redirection
     $routes->get('dashboard', 'Dashboard::index');
 
+    // SuperAdmin routes
+        $routes->group('superadmin', ['filter' => 'role:super_admin'], static function ($routes) {
+        $routes->get('users', 'SuperAdminController::index');
+        $routes->get('users/create', 'SuperAdminController::create');
+        $routes->post('users/create', 'SuperAdminController::create');
+        $routes->get('users/edit/(:num)', 'SuperAdminController::edit/$1');
+        $routes->post('users/edit/(:num)', 'SuperAdminController::edit/$1');
+        $routes->get('users/delete/(:num)', 'SuperAdminController::delete/$1');
+});
+
 
     // Admin routes
     $routes->group('admin', ['filter' => 'role:admin,staff'], static function ($routes) {
@@ -65,7 +75,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 });
 
     // Scholar routes
-    $routes->group('scholars', ['filter' => 'role:admin,staff,school_admin,school_staff'], static function($routes) {
+    $routes->group('scholars', ['filter' => 'role:superadmin,admin,staff,school_admin,school_staff'], static function($routes) {
     $routes->get('/', 'ScholarController::index');
     $routes->get('create', 'ScholarController::create');
     $routes->post('store', 'ScholarController::store');
@@ -81,7 +91,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 });
 
 
-       $routes->group('messages', ['filter' => 'role:admin,staff,school_admin,school_staff'], static function($routes) {
+       $routes->group('messages', ['filter' => 'role:superadmin,admin,staff,school_admin,school_staff'], static function($routes) {
     $routes->get('', 'Messages::index');
     $routes->get('chat/(:num)', 'Messages::chat/$1');
     $routes->post('send', 'Messages::send');

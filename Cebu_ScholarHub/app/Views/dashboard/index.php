@@ -19,7 +19,7 @@
 
   <!-- Quick Cards -->
   <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    <?php if (in_array($role, ['admin','staff'])): ?>
+    <?php if (in_array($role, ['admin','staff','super_admin'])): ?>
       <a href="<?= site_url('admin/users') ?>"
          class="group rounded-2xl bg-white ring-1 ring-gray-200 p-5 hover:shadow-sm transition">
         <div class="flex items-center justify-between">

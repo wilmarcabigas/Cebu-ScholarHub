@@ -63,6 +63,25 @@ class Dashboard extends BaseController
                 ];
 
                 return view('dashboard/admin', $data);
+                
+                case 'super_admin':
+                $data['stats'] = [
+                    'total_scholars' =>
+                        $this->scholarModel->where('status', 'active')->countAllResults(),
+
+                    'active_schools' =>
+                        $this->schoolModel->countAllResults(),
+
+                    'pending_bills' =>
+                        $this->billingModel->where('status', 'pending')->countAllResults(),
+
+                    'messages' =>
+                        $this->messageModel->where('receiver_id', $user['id'])
+                                           ->where('is_read', 0)
+                                           ->countAllResults()
+                ];
+
+                return view('dashboard/superadmin', $data);
 
 
             /* ================= STAFF DASHBOARD ================= */

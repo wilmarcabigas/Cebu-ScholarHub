@@ -13,6 +13,7 @@ class StaffOnlyFilter implements FilterInterface
         $role = session()->get('role');
 
         $allowed = [
+            'super_admin',
             'admin',
             'staff',
             'school_admin',

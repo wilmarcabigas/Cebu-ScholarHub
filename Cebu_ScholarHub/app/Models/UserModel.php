@@ -28,7 +28,7 @@ protected $deletedField = 'deleted_at';
     protected $validationRules = [
         'email' => 'required|valid_email|is_unique[users.email,id,{id}]',
         'full_name' => 'required|min_length[2]',
-        'role' => 'required|in_list[admin,staff,school_admin,school_staff,scholar]',
+        'role' => 'required|in_list[super_admin,admin,staff,school_admin,school_staff,scholar]',
         'status' => 'permit_empty|in_list[active,inactive]'
     ];
 
