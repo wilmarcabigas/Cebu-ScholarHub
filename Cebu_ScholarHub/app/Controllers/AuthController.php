@@ -61,9 +61,9 @@ class AuthController extends BaseController
             $attempts = ((int) ($user['failed_attempts'] ?? 0)) + 1;
 
             if ($attempts >= 3) {
-                $unlockCode = (string) rand(100000, 999999);
+                $unlockCode = (string) random_int(100000, 999999);
 
-                $this->userModel->update($user['id'], [
+                $this->userModel->update((int) $user['id'], [
                     'failed_attempts' => $attempts,
                     'unlock_code'     => $unlockCode,
                 ]);
@@ -76,7 +76,7 @@ class AuthController extends BaseController
                     ->with('error', 'Account locked. Unlock code sent to Gmail.');
             }
 
-            $this->userModel->update($user['id'], [
+            $this->userModel->update((int) $user['id'], [
                 'failed_attempts' => $attempts,
             ]);
 
@@ -86,7 +86,7 @@ class AuthController extends BaseController
         }
 
         // Password correct → reset failed attempts
-        $this->userModel->update($user['id'], [
+        $this->userModel->update((int) $user['id'], [
             'failed_attempts' => 0,
             'unlock_code'     => null,
         ]);
@@ -95,7 +95,7 @@ class AuthController extends BaseController
         $loginCode = (string) random_int(100000, 999999);
         $expiresAt = Time::now()->addMinutes(10)->toDateTimeString();
 
-        $this->userModel->update($user['id'], [
+        $this->userModel->update((int) $user['id'], [
             'login_code'            => $loginCode,
             'login_code_expires_at' => $expiresAt,
         ]);
@@ -139,7 +139,7 @@ class AuthController extends BaseController
                 ->with('error', 'Verification code must be 6 digits.');
         }
 
-        $user = $this->userModel->find($pendingUserId);
+        $user = $this->userModel->find((int) $pendingUserId);
 
         if (! $user) {
             $session->remove([
@@ -164,7 +164,7 @@ class AuthController extends BaseController
         }
 
         // Clear login code
-        $this->userModel->update($user['id'], [
+        $this->userModel->update((int) $user['id'], [
             'login_code'            => null,
             'login_code_expires_at' => null,
             'last_login_at'         => Time::now()->toDateTimeString(),
@@ -180,17 +180,21 @@ class AuthController extends BaseController
             'school_id' => $user['school_id'],
         ]);
 
-        // Remove temporary session
+        // Remove temporary and reset-password session
         $session->remove([
             'pending_login_user_id',
             'pending_login_email',
             'pending_login_verified_password',
+            'reset_password_user_id',
+            'reset_password_email',
+            'reset_password_verified',
         ]);
 
         return redirect()->to('/dashboard');
     }
 
     // Unlock account after 3 failed attempts
+    // After valid unlock code, show reset-password form inside login page
     public function unlock()
     {
         $email = trim((string) $this->request->getPost('email'));
@@ -201,6 +205,13 @@ class AuthController extends BaseController
                 ->with('unlock_mode', true)
                 ->with('locked_email', $email)
                 ->with('error', 'Please enter your email and unlock code.');
+        }
+
+        if (! preg_match('/^\d{6}$/', $code)) {
+            return redirect()->to('/login')
+                ->with('unlock_mode', true)
+                ->with('locked_email', $email)
+                ->with('error', 'Unlock code must be 6 digits.');
         }
 
         $user = $this->userModel->findActiveByEmail($email);
@@ -222,10 +233,65 @@ class AuthController extends BaseController
                 ->with('error', 'Invalid unlock code.');
         }
 
-        $this->userModel->resetFailedAttempts((int) $user['id']);
+        $session = Services::session();
+        $session->remove([
+            'pending_login_user_id',
+            'pending_login_email',
+            'pending_login_verified_password',
+        ]);
+        $session->set('reset_password_user_id', $user['id']);
+        $session->set('reset_password_email', $user['email']);
+        $session->set('reset_password_verified', true);
 
         return redirect()->to('/login')
-            ->with('success', 'Account unlocked. You can login again.');
+            ->with('success', 'Unlock code verified. Create your new password.');
+    }
+
+    // Save new password after unlock code verification
+    public function processResetPassword()
+    {
+        $session = Services::session();
+
+        $userId   = $session->get('reset_password_user_id');
+        $verified = $session->get('reset_password_verified');
+
+        if (! $userId || ! $verified) {
+            return redirect()->to('/login')
+                ->with('error', 'Reset password session expired. Please unlock again.');
+        }
+
+        $rules = [
+            'password'         => 'required|min_length[8]',
+            'confirm_password' => 'required|matches[password]',
+        ];
+
+        if (! $this->validate($rules)) {
+            return redirect()->to('/login')
+                ->withInput()
+                ->with('error', 'Password must be at least 8 characters and confirmation must match.');
+        }
+
+        $password = (string) $this->request->getPost('password');
+
+        $this->userModel->update((int) $userId, [
+            'password_hash'         => password_hash($password, PASSWORD_DEFAULT),
+            'failed_attempts'       => 0,
+            'unlock_code'           => null,
+            'login_code'            => null,
+            'login_code_expires_at' => null,
+        ]);
+
+        $session->remove([
+            'reset_password_user_id',
+            'reset_password_email',
+            'reset_password_verified',
+            'pending_login_user_id',
+            'pending_login_email',
+            'pending_login_verified_password',
+        ]);
+
+        return redirect()->to('/login')
+            ->with('message', 'Password reset successful. Please login with your new password.');
     }
 
     // Resend login verification code
@@ -239,7 +305,7 @@ class AuthController extends BaseController
                 ->with('error', 'No pending login found. Please login again.');
         }
 
-        $user = $this->userModel->find($pendingUserId);
+        $user = $this->userModel->find((int) $pendingUserId);
 
         if (! $user) {
             return redirect()->to('/login')
@@ -249,7 +315,7 @@ class AuthController extends BaseController
         $loginCode = (string) random_int(100000, 999999);
         $expiresAt = Time::now()->addMinutes(10)->toDateTimeString();
 
-        $this->userModel->update($user['id'], [
+        $this->userModel->update((int) $user['id'], [
             'login_code'            => $loginCode,
             'login_code_expires_at' => $expiresAt,
         ]);
@@ -278,7 +344,8 @@ class AuthController extends BaseController
         $emailService->setSubject('Unlock Your Account');
         $emailService->setMessage(
             'Your account has been locked because of 3 failed login attempts.<br><br>' .
-            'Your unlock code is: <b>' . $code . '</b>'
+            'Your unlock code is: <b>' . $code . '</b><br><br>' .
+            'After entering this code, create a new password to unlock your account.'
         );
 
         $emailService->send();
