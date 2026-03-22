@@ -25,7 +25,7 @@ class ScholarController extends BaseController
         $selectedSchool = $this->request->getGet('school_id'); // get school filter from dropdown
 
         $scholars = $this->scholarModel
-            ->select('scholars.*, schools.name as school_name')
+            ->select('scholars.id, scholars.school_id, scholars.first_name, scholars.last_name, scholars.middle_name, scholars.gender, scholars.course, scholars.year_level, scholars.status, scholars.date_of_birth, scholars.email, scholars.semesters_acquired, scholars.scholarship_type, scholars.upgraded_at, scholars.voucher_no, scholars.name_extension, scholars.address, scholars.contact_no, scholars.lrn_no, scholars.school_elementary, scholars.school_junior, scholars.school_senior_high, scholars.created_at, scholars.updated_at, scholars.deleted_at, schools.name as school_name')
             ->join('schools', 'schools.id = scholars.school_id', 'left');
 
         // If school staff/admin: only their school
@@ -71,25 +71,36 @@ class ScholarController extends BaseController
             ? $authUser['school_id']
             : $this->request->getPost('school_id');
 
+        $scholarshipType    = $this->request->getPost('scholarship_type') ?: '4_semester';
+        $semestersAcquired  = (int) $this->request->getPost('semesters_acquired');
+        $maxSemesters       = ScholarModel::maxSemesters($scholarshipType);
+
+        if ($semestersAcquired > $maxSemesters) {
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', ["Semesters acquired cannot exceed {$maxSemesters} for a {$scholarshipType} scholar."]);
+        }
+
         $data = [
-            'school_id'        => $schoolId,
-            'first_name'       => $this->request->getPost('first_name'),
-            'middle_name'      => $this->request->getPost('middle_name'),
-            'last_name'        => $this->request->getPost('last_name'),
-            'name_extension'   => $this->request->getPost('name_extension'),
-            'gender'           => $this->request->getPost('gender'),
-            'date_of_birth'    => $this->request->getPost('date_of_birth'),
-            'email'            => $this->request->getPost('email'),
-            'contact_no'       => $this->request->getPost('contact_no'),
-            'address'          => $this->request->getPost('address'),
-            'course'           => $this->request->getPost('course'),
-            'year_level'       => $this->request->getPost('year_level'),
-            'status'           => $this->request->getPost('status'),
-            'semesters_acquired' => $this->request->getPost('semesters_acquired'),
-            'voucher_no'       => $this->request->getPost('voucher_no'),
-            'lrn_no'           => $this->request->getPost('lrn_no'),
-            'school_elementary' => $this->request->getPost('school_elementary'),
-            'school_junior'    => $this->request->getPost('school_junior'),
+            'school_id'          => $schoolId,
+            'first_name'         => $this->request->getPost('first_name'),
+            'middle_name'        => $this->request->getPost('middle_name'),
+            'last_name'          => $this->request->getPost('last_name'),
+            'name_extension'     => $this->request->getPost('name_extension'),
+            'gender'             => $this->request->getPost('gender'),
+            'date_of_birth'      => $this->request->getPost('date_of_birth'),
+            'email'              => $this->request->getPost('email'),
+            'contact_no'         => $this->request->getPost('contact_no'),
+            'address'            => $this->request->getPost('address'),
+            'course'             => $this->request->getPost('course'),
+            'year_level'         => $this->request->getPost('year_level'),
+            'status'             => $this->request->getPost('status'),
+            'semesters_acquired' => $semestersAcquired,
+            'scholarship_type'   => $scholarshipType,
+            'voucher_no'         => $this->request->getPost('voucher_no'),
+            'lrn_no'             => $this->request->getPost('lrn_no'),
+            'school_elementary'  => $this->request->getPost('school_elementary'),
+            'school_junior'      => $this->request->getPost('school_junior'),
             'school_senior_high' => $this->request->getPost('school_senior_high'),
         ];
 
@@ -147,6 +158,16 @@ class ScholarController extends BaseController
         ? $authUser['school_id']
         : $this->request->getPost('school_id');
 
+    $scholarshipType   = $this->request->getPost('scholarship_type') ?: '4_semester';
+    $semestersAcquired = (int) $this->request->getPost('semesters_acquired');
+    $maxSemesters      = ScholarModel::maxSemesters($scholarshipType);
+
+    if ($semestersAcquired > $maxSemesters) {
+        return redirect()->back()
+            ->withInput()
+            ->with('errors', ["Semesters acquired cannot exceed {$maxSemesters} for a {$scholarshipType} scholar."]);
+    }
+
     $data = [
         'school_id'          => $schoolId,
         'first_name'         => $this->request->getPost('first_name'),
@@ -161,7 +182,8 @@ class ScholarController extends BaseController
         'course'             => $this->request->getPost('course'),
         'year_level'         => $this->request->getPost('year_level'),
         'status'             => $this->request->getPost('status'),
-        'semesters_acquired' => $this->request->getPost('semesters_acquired'),
+        'semesters_acquired' => $semestersAcquired,
+        'scholarship_type'   => $scholarshipType,
         'voucher_no'         => $this->request->getPost('voucher_no'),
         'lrn_no'             => $this->request->getPost('lrn_no'),
         'school_elementary'  => $this->request->getPost('school_elementary'),
@@ -179,6 +201,47 @@ class ScholarController extends BaseController
         ->with('success', 'Scholar updated successfully');
 }
        
+    /**
+     * Upgrade a 4-semester scholar to 8-semester type.
+     * Only allowed: 4_semester → 8_semester.
+     */
+    public function upgrade($id)
+    {
+        $authUser = session()->get('auth_user');
+        $scholar  = $this->scholarModel->find($id);
+
+        if (!$scholar) {
+            return redirect()->to(site_url('scholars'))
+                ->with('error', 'Scholar not found.');
+        }
+
+        // School-scoped roles can only upgrade their own scholars
+        if (in_array($authUser['role'], ['school_admin', 'school_staff']) &&
+            $scholar['school_id'] != $authUser['school_id']) {
+            return redirect()->to(site_url('scholars'))
+                ->with('error', 'Unauthorized access.');
+        }
+
+        if ($scholar['scholarship_type'] !== '4_semester') {
+            return redirect()->back()
+                ->with('error', 'Only 4-semester scholars can be upgraded to 8-semester.');
+        }
+
+        if ($scholar['status'] !== 'active') {
+            return redirect()->back()
+                ->with('error', 'Only active scholars can be upgraded.');
+        }
+
+        $this->scholarModel->update($id, [
+            'scholarship_type' => '8_semester',
+            'upgraded_at'      => date('Y-m-d H:i:s'),
+            'upgraded_by'      => $authUser['id'],
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Scholar successfully upgraded to 8-semester type.');
+    }
+
     public function delete($id)
     {
         $this->scholarModel->delete($id);
@@ -256,6 +319,7 @@ class ScholarController extends BaseController
 
             $requiredColumns = [
                 'semesters acquired',
+                'scholarship type',
                 'voucher no.',
                 'last name',
                 'first name',
@@ -277,6 +341,7 @@ class ScholarController extends BaseController
 
             $columnMap = [
                 'semesters acquired' => 'semesters_acquired',
+                'scholarship type'   => 'scholarship_type',
                 'voucher no.' => 'voucher_no',
                 'last name' => 'last_name',
                 'first name' => 'first_name',
@@ -461,11 +526,32 @@ class ScholarController extends BaseController
                     }
                 }
 
+                // ===== VALIDATE SCHOLARSHIP TYPE =====
+                $validTypes = ['4_semester', '8_semester', '10_semester'];
+                if (empty($rowData['scholarship_type'])) {
+                    $rowData['scholarship_type'] = '4_semester';
+                } else {
+                    $typeNorm = strtolower(trim($rowData['scholarship_type']));
+                    // Accept friendly formats: "4", "4 semester", "4-semester", "4_semester"
+                    $typeMap = [
+                        '4' => '4_semester', '4 semester' => '4_semester', '4-semester' => '4_semester', '4_semester' => '4_semester',
+                        '8' => '8_semester', '8 semester' => '8_semester', '8-semester' => '8_semester', '8_semester' => '8_semester',
+                        '10' => '10_semester', '10 semester' => '10_semester', '10-semester' => '10_semester', '10_semester' => '10_semester',
+                    ];
+                    if (isset($typeMap[$typeNorm])) {
+                        $rowData['scholarship_type'] = $typeMap[$typeNorm];
+                    } else {
+                        $rowErrors[] = "Invalid scholarship type: {$rowData['scholarship_type']} (must be 4_semester, 8_semester, or 10_semester)";
+                        $rowData['scholarship_type'] = '4_semester';
+                    }
+                }
+
                 // ===== VALIDATE SEMESTERS =====
+                $semMax = ScholarModel::maxSemesters($rowData['scholarship_type']);
                 if (!empty($rowData['semesters_acquired'])) {
                     $semesters = (int)$rowData['semesters_acquired'];
-                    if ($semesters < 1 || $semesters > 8) {
-                        $rowErrors[] = "Invalid semesters: {$rowData['semesters_acquired']} (must be 1-8)";
+                    if ($semesters < 1 || $semesters > $semMax) {
+                        $rowErrors[] = "Invalid semesters: {$rowData['semesters_acquired']} (must be 1-{$semMax} for {$rowData['scholarship_type']})";
                     } else {
                         $rowData['semesters_acquired'] = $semesters;
                     }

@@ -93,9 +93,32 @@
           <label for="year_level" class="block text-sm font-medium text-gray-700">Year Level <span class="text-red-500">*</span></label>
           <input type="number" name="year_level" value="<?= old('year_level', $scholar['year_level']) ?>" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required>
         </div>
+        <?php
+          $currentType = old('scholarship_type', $scholar['scholarship_type'] ?? '4_semester');
+          $isAdminOrStaff = in_array($user['role'], ['admin', 'staff']);
+          $semMax = $currentType === '10_semester' ? 10 : ($currentType === '8_semester' ? 8 : 4);
+        ?>
+        <div class="form-group">
+          <label for="scholarship_type" class="block text-sm font-medium text-gray-700">Scholarship Type <span class="text-red-500">*</span></label>
+          <?php if ($isAdminOrStaff): ?>
+          <select name="scholarship_type" id="scholarship_type_edit" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required onchange="updateEditSemMax(this.value)">
+            <option value="4_semester" <?= $currentType === '4_semester' ? 'selected' : '' ?>>4-Semester</option>
+            <option value="8_semester" <?= $currentType === '8_semester' ? 'selected' : '' ?>>8-Semester</option>
+            <option value="10_semester" <?= $currentType === '10_semester' ? 'selected' : '' ?>>10-Semester</option>
+          </select>
+          <?php else: ?>
+          <input type="hidden" name="scholarship_type" value="<?= esc($currentType) ?>">
+          <input type="text" value="<?= $currentType === '10_semester' ? '10-Semester' : ($currentType === '8_semester' ? '8-Semester' : '4-Semester') ?>" class="mt-1 p-2 border border-gray-200 bg-gray-50 rounded-md w-full" readonly>
+          <p class="text-xs text-gray-400 mt-1">Use the Upgrade button to change from 4-Semester to 8-Semester.</p>
+          <?php endif; ?>
+          <?php if (!empty($scholar['upgraded_at'])): ?>
+            <p class="text-xs text-green-600 mt-1">Upgraded on <?= esc($scholar['upgraded_at']) ?></p>
+          <?php endif; ?>
+        </div>
         <div class="form-group">
           <label for="semesters_acquired" class="block text-sm font-medium text-gray-700">Semesters Acquired <span class="text-red-500">*</span></label>
-          <input type="number" name="semesters_acquired" value="<?= old('semesters_acquired', $scholar['semesters_acquired']) ?>" min="1" max="8" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required>
+          <input type="number" name="semesters_acquired" id="semesters_acquired_edit" value="<?= old('semesters_acquired', $scholar['semesters_acquired']) ?>" min="1" max="<?= $semMax ?>" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required>
+          <p class="text-xs text-gray-400 mt-1">Max: <span id="edit_sem_max_label"><?= $semMax ?></span> for selected type</p>
         </div>
         <div class="form-group">
           <label for="status" class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>
@@ -175,5 +198,14 @@
   </form>
 </div>
 
+<script>
+  function updateEditSemMax(type) {
+    const maxMap = { '4_semester': 4, '8_semester': 8, '10_semester': 10 };
+    const max = maxMap[type] || 4;
+    const input = document.getElementById('semesters_acquired_edit');
+    const label = document.getElementById('edit_sem_max_label');
+    if (input) { input.max = max; if (parseInt(input.value) > max) input.value = max; }
+    if (label) label.textContent = max;
+  }
+</script>
 <?= $this->endSection() ?>
-

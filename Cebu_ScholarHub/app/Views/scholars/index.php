@@ -6,6 +6,14 @@
 ?>
 
 <div class="space-y-6">
+
+  <?php if (session()->getFlashdata('success')): ?>
+    <div class="p-3 bg-green-100 text-green-800 rounded"><?= esc(session()->getFlashdata('success')) ?></div>
+  <?php endif; ?>
+  <?php if (session()->getFlashdata('error')): ?>
+    <div class="p-3 bg-red-100 text-red-800 rounded"><?= esc(session()->getFlashdata('error')) ?></div>
+  <?php endif; ?>
+
   <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">
@@ -79,6 +87,8 @@
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">First Name</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Name</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scholarship Type</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Semesters</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
             <th class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 uppercase tracking-wider">School</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -86,10 +96,36 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <?php foreach ($scholars as $scholar): ?>
+            <?php
+              $sType    = $scholar['scholarship_type'] ?? '4_semester';
+              $maxSem   = $sType === '10_semester' ? 10 : ($sType === '8_semester' ? 8 : 4);
+              $acquired = (int)($scholar['semesters_acquired'] ?? 0);
+              $badgeColor = match($sType) {
+                '8_semester'  => 'bg-blue-100 text-blue-800',
+                '10_semester' => 'bg-purple-100 text-purple-800',
+                default       => 'bg-gray-100 text-gray-700',
+              };
+              $badgeLabel = match($sType) {
+                '8_semester'  => '8-SEM',
+                '10_semester' => '10-SEM',
+                default       => '4-SEM',
+              };
+            ?>
             <tr>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= esc($scholar['first_name']) ?></td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><?= esc($scholar['last_name']) ?></td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= esc($scholar['course']) ?></td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full <?= $badgeColor ?>">
+                  <?= $badgeLabel ?>
+                </span>
+                <?php if (!empty($scholar['upgraded_at'])): ?>
+                  <span class="ml-1 text-xs text-green-600" title="Upgraded on <?= esc($scholar['upgraded_at']) ?>">&#8593;</span>
+                <?php endif; ?>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <?= $acquired ?>/<?= $maxSem ?>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= esc($scholar['status']) ?></td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?= esc($scholar['school_name']) ?></td>
 
@@ -132,6 +168,19 @@
                             d="M15.232 5.232l3.536 3.536M9 13l6-6 3 3-6 6H9v-3z"/>
                     </svg>
                   </a>
+
+                  <!-- Upgrade to 8-semester (only for active 4-semester scholars) -->
+                  <?php if ($sType === '4_semester' && $scholar['status'] === 'active'): ?>
+                  <form method="post" action="<?= site_url('scholars/upgrade/' . $scholar['id']) ?>" style="display:inline;"
+                        onsubmit="return confirm('Upgrade this scholar to 8-semester type?');">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="text-green-600 hover:text-green-900" title="Upgrade to 8-Semester">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                      </svg>
+                    </button>
+                  </form>
+                  <?php endif; ?>
 
                   <!-- Delete -->
                   <a href="/scholars/delete/<?= $scholar['id'] ?>"
@@ -203,6 +252,7 @@
           <div class="grid grid-cols-2 gap-4">
             <div><label class="text-sm font-medium text-gray-700">Course</label><p id="modal_course" class="text-gray-900"></p></div>
             <div><label class="text-sm font-medium text-gray-700">Year Level</label><p id="modal_year_level" class="text-gray-900"></p></div>
+            <div><label class="text-sm font-medium text-gray-700">Scholarship Type</label><p id="modal_scholarship_type" class="text-gray-900"></p></div>
             <div><label class="text-sm font-medium text-gray-700">Semesters Acquired</label><p id="modal_semesters_acquired" class="text-gray-900"></p></div>
             <div><label class="text-sm font-medium text-gray-700">Status</label><p id="modal_status" class="text-gray-900"></p></div>
             <div><label class="text-sm font-medium text-gray-700">School</label><p id="modal_school_name" class="text-gray-900"></p></div>
@@ -285,6 +335,8 @@
     document.getElementById('modal_address').textContent = scholar.address || '';
     document.getElementById('modal_course').textContent = scholar.course || '';
     document.getElementById('modal_year_level').textContent = scholar.year_level || '';
+    const typeLabels = {'4_semester':'4-Semester','8_semester':'8-Semester','10_semester':'10-Semester'};
+    document.getElementById('modal_scholarship_type').textContent = typeLabels[scholar.scholarship_type] || scholar.scholarship_type || '';
     document.getElementById('modal_semesters_acquired').textContent = scholar.semesters_acquired || '';
     document.getElementById('modal_status').textContent = scholar.status || '';
     document.getElementById('modal_school_name').textContent = scholar.school_name || '';

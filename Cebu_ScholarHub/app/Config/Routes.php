@@ -25,7 +25,22 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->post('users/edit/(:num)', 'UsersController::edit/$1');
         $routes->get('users/delete/(:num)', 'UsersController::delete/$1');
         
+        // Admin billing routes
+        $routes->get('billing', 'Admin\BillingController::index');
+        $routes->get('billing/view/(:num)', 'Admin\BillingController::view/$1');
+        $routes->post('billing/receive/(:num)', 'Admin\BillingController::receive/$1');
+        $routes->post('billing/record-payment/(:num)', 'Admin\BillingController::recordPayment/$1');
+        $routes->post('billing/reject/(:num)', 'Admin\BillingController::reject/$1');
+        $routes->get('billing/print/(:num)', 'Admin\BillingController::print/$1');
+        
+        // Admin reports routes
         $routes->get('reports', 'Admin\ReportsController::index');
+        $routes->get('reports/payment-status', 'Admin\ReportsController::paymentStatus');
+        $routes->get('reports/financial-report', 'Admin\ReportsController::financialReport');
+        $routes->get('reports/billing-sheets', 'Admin\ReportsController::billingSheets');
+        $routes->get('reports/scholar-payment-history', 'Admin\ReportsController::scholarPaymentHistory');
+        $routes->get('reports/export-financial', 'Admin\ReportsController::exportFinancialReport');
+        $routes->get('reports/export-scholar', 'Admin\ReportsController::exportScholarReport');
 
         $routes->get('schools', 'Admin\Schools::index');
         $routes->get('schools/create', 'Admin\Schools::create');
@@ -33,8 +48,6 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('schools/edit/(:num)', 'Admin\Schools::edit/$1');
         $routes->post('schools/update/(:num)', 'Admin\Schools::update/$1');
         $routes->get('schools/delete/(:num)', 'Admin\Schools::delete/$1');
-      
-        
     });
 
     // Staff routes
@@ -45,24 +58,40 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
     // School Admin routes
     $routes->group('school', ['filter' => 'role:school_admin,school_staff,staff'], function($routes) {
-    // Scholar routes
-    $routes->get('scholars', 'ScholarController::index');
-    $routes->get('scholars/create', 'ScholarController::create');
-    $routes->post('scholars/store', 'ScholarController::store');
-    $routes->get('scholars/edit/(:num)', 'ScholarController::edit/$1');
-    $routes->post('scholars/update/(:num)', 'ScholarController::update/$1');
-    $routes->get('scholars/delete/(:num)', 'ScholarController::delete/$1');
-    
-    $routes->get('billing', 'School\BillingController::index');
-    $routes->get('billing/create', 'School\BillingController::create');
-    $routes->post('billing/store', 'School\BillingController::store');
-    $routes->get('billing/view/(:num)', 'School\BillingController::view/$1');
-    $routes->post('payments/store', 'PaymentController::store');
-    // Other school routes
-    $routes->get('requirements',  'School\RequirementsController::index');
-    $routes->get('reports', 'School\ReportsController::index');
-    
-});
+        // Scholar routes
+        $routes->get('scholars', 'ScholarController::index');
+        $routes->get('scholars/create', 'ScholarController::create');
+        $routes->post('scholars/store', 'ScholarController::store');
+        $routes->get('scholars/edit/(:num)', 'ScholarController::edit/$1');
+        $routes->post('scholars/update/(:num)', 'ScholarController::update/$1');
+        $routes->get('scholars/delete/(:num)', 'ScholarController::delete/$1');
+        $routes->post('scholars/upgrade/(:num)', 'ScholarController::upgrade/$1');
+        
+        // School billing routes
+        $routes->get('billing', 'School\BillingController::index');
+        $routes->get('billing/create', 'School\BillingController::create');
+        $routes->post('billing/store', 'School\BillingController::store');
+        $routes->get('billing/view/(:num)', 'School\BillingController::view/$1');
+        $routes->get('billing/edit/(:num)', 'School\BillingController::edit/$1');
+        $routes->post('billing/update/(:num)', 'School\BillingController::update/$1');
+        $routes->post('billing/submit/(:num)', 'School\BillingController::submit/$1');
+        $routes->post('billing/confirm-receipt/(:num)', 'School\BillingController::confirmReceipt/$1');
+        $routes->get('billing/delete/(:num)', 'School\BillingController::delete/$1');
+        $routes->get('billing/print/(:num)', 'School\BillingController::print/$1');
+        
+        // School reports routes
+        $routes->get('reports', 'School\ReportsController::index');
+        $routes->get('reports/payment-history', 'School\ReportsController::paymentHistory');
+        $routes->get('reports/billing-sheet/(:num)', 'School\ReportsController::billingSheet/$1');
+        $routes->get('reports/status-summary', 'School\ReportsController::statusSummary');
+        $routes->get('reports/export-payment-history', 'School\ReportsController::exportPaymentHistory');
+        
+        // Other school routes
+        $routes->get('requirements',  'School\RequirementsController::index');
+        
+        // Payment recording
+        $routes->post('payments/store', 'PaymentController::store');
+    });
 
     // Scholar routes
     $routes->group('scholars', ['filter' => 'role:admin,staff,school_admin,school_staff'], static function($routes) {
@@ -72,6 +101,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('edit/(:num)', 'ScholarController::edit/$1');
     $routes->post('update/(:num)', 'ScholarController::update/$1');
     $routes->get('delete/(:num)', 'ScholarController::delete/$1');
+    $routes->post('upgrade/(:num)', 'ScholarController::upgrade/$1');
     $routes->get('download-error-report/(:any)', 'ScholarController::downloadErrorReport/$1');
 
     $routes->get('import', 'ScholarController::importForm');
