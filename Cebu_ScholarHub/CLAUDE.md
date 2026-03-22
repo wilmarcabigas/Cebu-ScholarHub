@@ -62,20 +62,71 @@ Filters in `app/Filters/` enforce authentication (`AuthFilter`) and role checks 
 
 The core feature of the system. Flow:
 
-1. **School creates billing batch** (`School\BillingController::create/store`) — selects active scholars (₱10,000 fixed per scholar), creates `billing_batches` record + `billing_items` per scholar + individual `bills` per scholar
+1. **School creates billing batch** (`School\BillingController::create/store`) — selects active scholars (₱10,000 fixed per scholar), creates `billing_batches` record + `billing_items` record per scholar
 2. **School submits batch** (`submit`) — status: `draft` → `submitted`
-3. **Admin/staff receives batch** (`Admin\BillingController::receive`) — status: `submitted` → `received`
+3. **Admin/staff receives batch** (`Admin\BillingController::receive`) — status: `submitted` → `received`; creates individual `bills` records per scholar at this step
 4. **Admin/staff records payment** (`recordPayment`) — distributes payment amount across unpaid bills sequentially, inserts into `payments` table, status auto-updates to `partial` or `paid` via `BillingBatchModel::updateBatchStatus()`
 5. **School confirms receipt** (`School\BillingController::confirmReceipt`) — school acknowledges they received the check/voucher; sets `receipt_confirmed_at` on the batch
 
 Rejection flow: Admin can reject a submitted batch with required `rejection_remarks` (min 10 chars) → status reverts to `draft` → school edits and resubmits.
 
+**Batch statuses:** `draft` → `submitted` → `received` → `partial` / `paid`
+
 ### Key Models
 
-- **`BillingBatchModel`** — has `updateBatchStatus(int $batchId)` (auto-sets partial/paid) and `duplicateExists(int $schoolId, string $semester, string $schoolYear, int $excludeId)` (prevents duplicates)
-- **`BillModel`** — individual bill per scholar in a batch; tracked by `amount_due` / `amount_paid` / `status`
-- **`PaymentModel`** — payment records with `voucher_no`, `payment_date`, `remarks`; linked to billing batch via `billing_batch_id`
-- **`ScholarModel`** — uses soft deletes; always filter by `deleted_at IS NULL` for active scholars. Has static `maxSemesters(string $type): int` helper returning 4/8/10 based on `scholarship_type`
+- **`BillingBatchModel`** — `billing_batches` table. Key methods:
+  - `getBatchesForSchool(int $schoolId)` — with `school_name` joined
+  - `getAllBatchesForAdmin()` — all batches with `school_name` joined
+  - `getBatchWithSchool(int $batchId)` — single batch with `school_name` joined (used by admin)
+  - `updateBatchStatus(int $batchId)` — auto-sets `partial`/`paid` based on bills
+  - `duplicateExists(int $schoolId, string $semester, string $schoolYear, int $excludeId)` — prevents duplicate batches
+- **`BillingItemModel`** — `billing_items` table (file: `BillingitemModel.php`, class: `BillingItemModel`). One row per scholar per batch. Key methods:
+  - `getItemsWithScholars(int $batchId)` — joins scholars + schools, returns all columns needed for print views
+  - `deleteByBatch(int $batchId)` — used when re-editing a draft
+  - `sumByBatch(int $batchId)` — returns total amount for a batch
+- **`BillModel`** — `bills` table. Individual bill per scholar in a batch; tracked by `amount_due` / `amount_paid` / `status`. Created only when admin *receives* a batch.
+- **`PaymentModel`** — `payments` table. Payment records with `voucher_no`, `payment_date`, `remarks`; linked to a bill via `bill_id`. Has `getPaymentsForBill(int $billId)` and `getPaymentsBySchool(int $schoolId)`.
+- **`ScholarModel`** — uses soft deletes; always filter by `deleted_at IS NULL` for active scholars. Has static `maxSemesters(string $type): int` helper returning 4/8/10 based on `scholarship_type`.
+
+### Reports
+
+**Admin reports** (`Admin\ReportsController`, routes under `/admin/reports/`):
+
+| Route | Method | View |
+|-------|--------|------|
+| `GET /admin/reports` | `index()` | `admin/reports/dashboard` |
+| `GET /admin/reports/payment-status` | `paymentStatus()` | `admin/reports/payment-status` |
+| `GET /admin/reports/financial-report` | `financialReport()` | `admin/reports/financial-report` |
+| `GET /admin/reports/billing-sheets` | `billingSheets()` | `admin/reports/billing-sheets-admin` |
+| `GET /admin/reports/scholar-payment-history` | `scholarPaymentHistory()` | `admin/reports/scholar-payment-history-admin` |
+| `GET /admin/reports/export-financial` | `exportFinancialReport()` | CSV download |
+| `GET /admin/reports/export-scholar` | `exportScholarReport()` | CSV download |
+
+**School reports** (`School\ReportsController`, routes under `/school/reports/`):
+
+| Route | Method | View |
+|-------|--------|------|
+| `GET /school/reports` | `index()` | `school/reports/index` |
+| `GET /school/reports/payment-history` | `paymentHistory()` | `school/reports/payment_history` |
+| `GET /school/reports/billing-sheet/{id}` | `billingSheet(int $batchId)` | `school/reports/billing_sheet` |
+| `GET /school/reports/status-summary` | `statusSummary()` | `school/reports/status_summary` |
+| `GET /school/reports/export-payment-history` | `exportPaymentHistory()` | CSV download |
+
+CSV exports use a UTF-8 BOM and stream directly via `php://output` + `exit`.
+
+### Print Views
+
+Print views are standalone HTML pages (no layout extension) with `window.print()` buttons. They use `@media print { .no-print { display: none; } }` to hide the Print/Close buttons when printing.
+
+| Path | Used by | Notes |
+|------|---------|-------|
+| `app/Views/bills/print.php` | `School\BillingController::print()` | School-side billing sheet |
+| `app/Views/school/billing/print.php` | (duplicate, not directly routed) | Same content as bills/print |
+| `app/Views/admin/billing/print.php` | `Admin\BillingController::print()` | Adds school name to batch label |
+
+Print routes:
+- `GET /school/billing/print/{id}` → `School\BillingController::print($id)` — enforces school ownership
+- `GET /admin/billing/print/{id}` → `Admin\BillingController::print($id)` — uses `getBatchWithSchool()` for `school_name`
 
 ### Audit Logging
 
@@ -84,9 +135,12 @@ Rejection flow: Admin can reject a submitted batch with required `rejection_rema
 ### Views & Layout
 
 - All views extend `layouts/base` via `$this->extend('layouts/base')` and use `$this->section('content')`
+- **Exception:** print views are standalone HTML (no layout), opened in `target="_blank"` tabs
 - Tailwind CSS for all styling (utility classes, no custom CSS build step)
 - School billing views: `app/Views/school/billing/` (index, create, edit, view, print)
 - Admin billing views: `app/Views/admin/billing/` (index, view, print)
+- Admin report views: `app/Views/admin/reports/` (dashboard, payment-status, financial-report, billing-sheets-admin, scholar-payment-history-admin)
+- School report views: `app/Views/school/reports/` (index, payment_history, billing_sheet, status_summary)
 
 ### Important Conventions
 

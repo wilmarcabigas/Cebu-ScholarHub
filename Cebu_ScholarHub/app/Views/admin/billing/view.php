@@ -234,7 +234,7 @@
             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Yr</th>
             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Control No.</th>
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Barangay</th>
+            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
             <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
           </tr>
         </thead>
@@ -248,7 +248,7 @@
               <td class="px-3 py-2 text-gray-600"><?= esc($item['course'] ?? '—') ?></td>
               <td class="px-3 py-2 text-gray-600"><?= esc($item['year_level'] ?? '—') ?></td>
               <td class="px-3 py-2 font-mono text-xs text-gray-500"><?= esc($item['control_no'] ?? $item['scholar_control_no'] ?? '—') ?></td>
-              <td class="px-3 py-2 text-xs text-gray-500"><?= esc($item['barangay'] ?? '—') ?></td>
+              <td class="px-3 py-2 text-xs text-gray-500"><?= esc($item['address'] ?? '—') ?></td>
               <td class="px-3 py-2 text-right font-semibold text-gray-700">₱<?= number_format($item['amount'], 2) ?></td>
             </tr>
           <?php endforeach; ?>

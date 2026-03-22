@@ -116,7 +116,7 @@
       <th class="text-center" style="width:28px;">Yr</th>
       <th>Control No.</th>
       <th>School</th>
-      <th>Address / Barangay</th>
+      <th>Address</th>
       <th class="text-right" style="width:90px;">Amount</th>
     </tr>
   </thead>
