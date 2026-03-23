@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\ActivityNotifier;
 use App\Models\ScholarModel;
 use App\Models\SchoolModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -12,11 +13,13 @@ class ScholarController extends BaseController
 {
     protected $scholarModel;
     protected $schoolModel;
+    protected $activityNotifier;
 
     public function __construct()
     {
         $this->scholarModel = new ScholarModel();
         $this->schoolModel  = new SchoolModel();
+        $this->activityNotifier = new ActivityNotifier();
     }
 
     public function index()
@@ -104,11 +107,26 @@ class ScholarController extends BaseController
             'school_senior_high' => $this->request->getPost('school_senior_high'),
         ];
 
-        if (!$this->scholarModel->insert($data)) {
+        $scholarId = $this->scholarModel->insert($data);
+
+        if (!$scholarId) {
             return redirect()->back()
                 ->with('errors', $this->scholarModel->errors())
                 ->withInput();
         }
+
+        $school = $this->schoolModel->find($schoolId);
+        $schoolName = $school['name'] ?? 'Unknown School';
+        $scholarName = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
+
+        $this->activityNotifier->notifySchoolActivity(
+            $authUser,
+            'scholar_created',
+            'New scholar added',
+            "{$authUser['full_name']} added {$scholarName} for {$schoolName}.",
+            site_url('scholars'),
+            (int) $schoolId
+        );
 
         return redirect()->to(site_url('scholars'))
             ->with('message', 'Scholar added successfully');
@@ -197,6 +215,19 @@ class ScholarController extends BaseController
             ->with('errors', $model->errors());
     }
 
+    $school = $this->schoolModel->find($schoolId);
+    $schoolName = $school['name'] ?? 'Unknown School';
+    $scholarName = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
+
+    $this->activityNotifier->notifySchoolActivity(
+        $authUser,
+        'scholar_updated',
+        'Scholar record updated',
+        "{$authUser['full_name']} updated {$scholarName} from {$schoolName}.",
+        site_url('scholars'),
+        (int) $schoolId
+    );
+
     return redirect()->to('/scholars')
         ->with('success', 'Scholar updated successfully');
 }
@@ -244,7 +275,25 @@ class ScholarController extends BaseController
 
     public function delete($id)
     {
+        $authUser = session()->get('auth_user');
+        $scholar = $this->scholarModel->find($id);
+
         $this->scholarModel->delete($id);
+
+        if ($scholar) {
+            $school = $this->schoolModel->find($scholar['school_id']);
+            $schoolName = $school['name'] ?? 'Unknown School';
+            $scholarName = trim(($scholar['first_name'] ?? '') . ' ' . ($scholar['last_name'] ?? ''));
+
+            $this->activityNotifier->notifySchoolActivity(
+                $authUser,
+                'scholar_deleted',
+                'Scholar record deleted',
+                "{$authUser['full_name']} deleted {$scholarName} from {$schoolName}.",
+                site_url('scholars'),
+                (int) $scholar['school_id']
+            );
+        }
 
         return redirect()->to(site_url('scholars'))
             ->with('message', 'Scholar deleted successfully');
@@ -699,6 +748,29 @@ class ScholarController extends BaseController
 
             $transResult = $db->transComplete();
             log_message('debug', 'Transaction result: ' . ($transResult ? 'Committed' : 'Failed'));
+
+            if ($transResult && ($importSummary['imported'] > 0 || $importSummary['updated'] > 0)) {
+                $schoolIdForNotification = in_array($authUser['role'], ['school_admin', 'school_staff'], true)
+                    ? (int) $authUser['school_id']
+                    : null;
+
+                $schoolName = 'their school';
+                if ($schoolIdForNotification) {
+                    $school = $this->schoolModel->find($schoolIdForNotification);
+                    $schoolName = $school['name'] ?? $schoolName;
+                }
+
+                $summaryText = "Imported {$importSummary['imported']} scholar(s), updated {$importSummary['updated']} scholar(s), and skipped {$importSummary['skipped']} row(s) for {$schoolName}.";
+
+                $this->activityNotifier->notifySchoolActivity(
+                    $authUser,
+                    'scholar_imported',
+                    'Scholar import completed',
+                    "{$authUser['full_name']} completed a scholar import. {$summaryText}",
+                    site_url('scholars/import'),
+                    $schoolIdForNotification
+                );
+            }
 
             // ===== GENERATE ERROR REPORT IF THERE ARE ERRORS =====
             $errorReportPath = null;

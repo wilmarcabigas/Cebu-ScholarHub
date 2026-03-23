@@ -15,6 +15,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     // Dashboard - will handle role-based redirection
     $routes->get('dashboard', 'Dashboard::index');
     $routes->get('dashboard/live-stats', 'Dashboard::liveStats', ['filter' => 'auth']);
+    $routes->get('dashboard/liveStats', 'Dashboard::liveStats');
+    $routes->get('/dashboard/course-chart-data', 'Dashboard::getCourseChartData');
     // Admin routes
     $routes->group('admin', ['filter' => 'role:admin,staff'], static function ($routes) {
         $routes->get('users', 'UsersController::index');
@@ -111,7 +113,13 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
        $routes->group('messages', ['filter' => 'role:admin,staff,school_admin,school_staff'], static function($routes) {
     $routes->get('', 'Messages::index');
     $routes->get('chat/(:num)', 'Messages::chat/$1');
+    $routes->get('fetch/(:num)', 'Messages::fetch/$1');
+    $routes->get('unread-summary', 'Messages::unreadSummary');
     $routes->post('send', 'Messages::send');
+});
+
+       $routes->group('notifications', ['filter' => 'role:admin,staff'], static function($routes) {
+    $routes->post('mark-all-read', 'NotificationsController::markAllRead');
 });
 });
 
@@ -132,6 +140,8 @@ $routes->group('', ['filter' => 'guest'], static function ($routes) {
     $routes->post('unlock', 'AuthController::unlock');
     $routes->post('/login/verify-code', 'AuthController::verifyCode');
     $routes->post('/login/resend-code', 'AuthController::resendCode');
+    $routes->post('reset-password', 'AuthController::processResetPassword');
+   
     
 });
 

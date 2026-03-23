@@ -92,6 +92,39 @@
 
     </div>
 
+    <!-- Charts -->
+    <div class="grid gap-6 lg:grid-cols-3">
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
+            <div class="mb-4">
+                <h3 class="text-base font-semibold text-gray-900">Scholars per School</h3>
+                <p class="text-sm text-gray-500">Distribution by partner school</p>
+            </div>
+            <div class="relative h-72">
+                <canvas id="staffSchoolChart"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
+            <div class="mb-4">
+                <h3 class="text-base font-semibold text-gray-900">Course Distribution</h3>
+                <p class="text-sm text-gray-500">Scholars grouped by course</p>
+            </div>
+            <div class="relative h-72">
+                <canvas id="staffCourseChart"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
+            <div class="mb-4">
+                <h3 class="text-base font-semibold text-gray-900">Scholar Status</h3>
+                <p class="text-sm text-gray-500">Current scholar status overview</p>
+            </div>
+            <div class="relative h-72">
+                <canvas id="staffStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
@@ -208,5 +241,66 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded.');
+        return;
+    }
+
+    const schoolLabels = <?= json_encode($school_chart_labels ?? []) ?>;
+    const schoolTotals = <?= json_encode($school_chart_totals ?? []) ?>;
+
+    const courseLabels = <?= json_encode($course_chart_labels ?? []) ?>;
+    const courseTotals = <?= json_encode($course_chart_totals ?? []) ?>;
+
+    const statusLabels = <?= json_encode($status_chart_labels ?? []) ?>;
+    const statusTotals = <?= json_encode($status_chart_totals ?? []) ?>;
+
+    const chartColors = [
+        '#4F46E5', '#06B6D4', '#10B981', '#F59E0B', '#EF4444',
+        '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#84CC16',
+        '#6366F1', '#0EA5E9', '#22C55E', '#EAB308', '#F43F5E'
+    ];
+
+    function createPieChart(canvasId, labels, totals) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+
+        new Chart(canvas, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: totals,
+                    backgroundColor: chartColors,
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 10,
+                            padding: 16
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    createPieChart('staffSchoolChart', schoolLabels, schoolTotals);
+    createPieChart('staffCourseChart', courseLabels, courseTotals);
+    createPieChart('staffStatusChart', statusLabels, statusTotals);
+});
+</script>
 
 <?= $this->endSection() ?>

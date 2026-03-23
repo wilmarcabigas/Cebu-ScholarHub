@@ -3,14 +3,25 @@
 namespace App\Controllers\School;
 
 use App\Controllers\BaseController;
+use App\Libraries\ActivityNotifier;
 use App\Models\BillingBatchModel;
 use App\Models\BillingItemModel;
 use App\Models\PaymentModel;
 use App\Models\BillModel;
 use App\Models\ScholarModel;
+use App\Models\SchoolModel;
 
 class BillingController extends BaseController
 {
+    protected $activityNotifier;
+    protected $schoolModel;
+
+    public function __construct()
+    {
+        $this->activityNotifier = new ActivityNotifier();
+        $this->schoolModel = new SchoolModel();
+    }
+
     // ------------------------------------------------------------------
     // INDEX — school user sees their billing batches
     // ------------------------------------------------------------------
@@ -124,6 +135,19 @@ class BillingController extends BaseController
         }
 
         log_audit(auth_id(), 'CREATE', 'billing_batches', $batchId, 'Draft batch created with ' . count($scholarIds) . ' scholars.');
+
+        $authUser = auth_user();
+        $school = $this->schoolModel->find($authUser['school_id']);
+        $schoolName = $school['name'] ?? 'Unknown School';
+
+        $this->activityNotifier->notifySchoolActivity(
+            $authUser,
+            'batch_created',
+            'New billing batch created',
+            "{$authUser['full_name']} created a billing batch from {$schoolName}.",
+            site_url('school/billing'),
+            (int) $authUser['school_id']
+        );
 
         return redirect()->to(site_url('school/billing'))
             ->with('success', 'Billing batch created as draft. You can edit or submit it when ready.');

@@ -1,125 +1,125 @@
-
-<?= $this->extend('layouts/base') ?>
+<?= $this->extend('layouts/school_adminbase') ?>
 <?= $this->section('content') ?>
 
 <div class="space-y-6">
-    <!-- Header -->
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold tracking-tight">School Staff Dashboard</h1>
             <p class="mt-1 text-sm text-gray-500">
-                <?= esc(isset($school['name']) ? $school['name'] : '') ?> Staff Portal
+                <?= esc(isset($school['name']) ? $school['name'] : '') ?> Scholar Management
             </p>
+        </div>
+        <div class="flex gap-3">
+            <a href="<?= site_url('school/scholars/create') ?>" 
+               class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add Scholar
+            </a>
         </div>
     </header>
 
-    <!-- Quick Stats -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Active Scholars</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['active_scholars']) ?></div>
-            <div class="mt-3 text-xs text-gray-500">Current semester</div> 
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <p class="text-sm text-gray-500">Active Scholars</p>
+            <h3 class="mt-2 text-3xl font-bold text-gray-900" id="statActiveScholars">
+                <?= esc($stats['active_scholars'] ?? 0) ?>
+            </h3>
         </div>
-        
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Pending Bills</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['pending_bills']) ?></div>
-            <div class="mt-3 text-xs text-yellow-600">Awaiting approval</div> 
+
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <p class="text-sm text-gray-500">Pending Bills</p>
+            <h3 class="mt-2 text-3xl font-bold text-gray-900" id="statPendingBills">
+                <?= esc($stats['pending_bills'] ?? 0) ?>
+            </h3>
         </div>
-        
-        <!--<div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Requirements Due</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['requirements_due']) ?></div>
-            <div class="mt-3 text-xs text-red-600">Need attention</div> 
-        </div>-->
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Messages</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">
-                <?= esc($stats['messages']) ?>
+
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <p class="text-sm text-gray-500">Unread Messages</p>
+            <h3 class="mt-2 text-3xl font-bold text-gray-900" id="statMessages">
+                <?= esc($stats['messages'] ?? 0) ?>
+            </h3>
+        </div>
+
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <p class="text-sm text-gray-500">Requirements Due</p>
+            <h3 class="mt-2 text-3xl font-bold text-gray-900" id="statRequirementsDue">
+                <?= esc($stats['requirements_due'] ?? 0) ?>
+            </h3>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div class="mb-4 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Students by Course</h2>
+                    <p class="text-sm text-gray-500">Live course distribution of scholars</p>
+                </div>
+                <span class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                    Live Data
+                </span>
+            </div>
+
+            <div class="relative mx-auto h-[320px] w-full max-w-[420px]">
+                <canvas id="coursePieChart"></canvas>
+            </div>
+
+            <div id="courseChartEmpty" class="hidden mt-4 text-center text-sm text-gray-500">
+                No course data available.
+            </div>
+        </div>
+
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div class="mb-4 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Students by Status</h2>
+                    <p class="text-sm text-gray-500">Live scholar status distribution</p>
+                </div>
+                <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                    Auto Refresh
+                </span>
+            </div>
+
+            <div class="relative mx-auto h-[320px] w-full max-w-[420px]">
+                <canvas id="statusPieChart"></canvas>
+            </div>
+
+            <div id="statusChartEmpty" class="hidden mt-4 text-center text-sm text-gray-500">
+                No status data available.
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Quick Overview</h2>
+            <p class="text-sm text-gray-500">Dashboard shortcuts for school management</p>
+        </div>
 
-        <a href="<?= site_url('messages') ?>"
-           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
-            <h3 class="font-semibold text-gray-900">message</h3>
-            <p class="mt-1 text-sm text-gray-500">Message partner schools </p>
-            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View messages →</span>
-        </a>
-        <a href="<?= site_url('school/scholars') ?>" 
-           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
-            <h3 class="font-semibold text-gray-900">Scholar Records</h3>
-            <p class="mt-1 text-sm text-gray-500">View and update scholar information.</p>
-            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View scholars →</span>
-        </a>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <a href="<?= site_url('messages') ?>"
+               class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
+                <h3 class="font-semibold text-gray-900">Message</h3>
+                <p class="mt-1 text-sm text-gray-500">Message partner schools</p>
+                <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View messages →</span>
+            </a>
 
-        <a href="<?= site_url('school/billing') ?>"
-           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
-            <h3 class="font-semibold text-gray-900">Submit Billing</h3>
-            <p class="mt-1 text-sm text-gray-500">Create billing requests for review.</p>
-            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">Submit billing →</span>
-        </a>
+            <a href="<?= site_url('scholars') ?>" 
+               class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
+                <h3 class="font-semibold text-gray-900">School Scholars</h3>
+                <p class="mt-1 text-sm text-gray-500">Manage your school's scholars.</p>
+                <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View scholars →</span>
+            </a>    
 
-    <!--    <a href="<?= site_url('school/requirements') ?>"
-           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
-            <h3 class="font-semibold text-gray-900">Requirements</h3>
-            <p class="mt-1 text-sm text-gray-500">Track scholar requirements status.</p>
-            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">Check status →</span>
-        </a>-->
-    </div>
-
-    <!-- Tasks & Notifications -->
-    <div class="grid gap-4 lg:grid-cols-2">
-        <!-- Pending Tasks -->
-        <section class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200">
-            <header class="px-5 py-4 border-b border-gray-200">
-                <h2 class="font-semibold text-gray-800">Pending Tasks</h2>
-            </header>
-            <div class="divide-y divide-gray-200">
-                <?php foreach(range(1, 4) as $i): ?>
-                <div class="px-5 py-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-900">Update scholar grades</p>
-                            <p class="text-xs text-gray-500 mt-0.5">For Juan Dela Cruz</p>
-                        </div>
-                        <span class="text-xs text-red-600">Due today</span> 
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
-
-        <!-- Recent Updates -->
-        <section class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200">
-            <header class="px-5 py-4 border-b border-gray-200">
-                <h2 class="font-semibold text-gray-800">Recent Updates</h2>
-            </header>
-            <div class="divide-y divide-gray-200">
-                <?php foreach(range(1, 4) as $i): ?>
-                <div class="px-5 py-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-900">Billing approved for Maria Santos</p>
-                            <p class="text-xs text-gray-500 mt-0.5">2 hours ago</p> 
-                        </div>  
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-            <footer class="px-5 py-4 border-t border-gray-200">
-               <!-- <a href="<?= site_url('school/updates') ?>" 
-                   class="text-sm text-indigo-600 hover:text-indigo-700">View all updates →</a>-->
-            </footer>
-        </section>
+            <a href="<?= site_url('school/billing') ?>"
+               class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
+                <h3 class="font-semibold text-gray-900">Billing Records</h3>
+                <p class="mt-1 text-sm text-gray-500">Manage tuition and other fees.</p>
+                <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">Post billing →</span>
+            </a>
+        </div>
     </div>
 </div>
 

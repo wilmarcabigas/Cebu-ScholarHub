@@ -1,14 +1,12 @@
-
-<?= $this->extend('layouts/base') ?>
+<?= $this->extend('layouts/school_adminbase') ?>
 <?= $this->section('content') ?>
 
 <div class="space-y-6">
-    <!-- Header -->
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold tracking-tight">School Dashboard</h1>
             <p class="mt-1 text-sm text-gray-500">
-                <?= esc(data: isset($school['name']) ? $school['name'] : '') ?> Scholar Management
+                <?= esc(isset($school['name']) ? $school['name'] : '') ?> Scholar Management
             </p>
         </div>
         <div class="flex gap-3">
@@ -22,89 +20,107 @@
         </div>
     </header>
 
-    <!-- Quick Stats -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Total Scholars</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">
-                <?= esc($stats['active_scholars']) ?>
-            </div>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <p class="text-sm text-gray-500">Active Scholars</p>
+            <h3 class="mt-2 text-3xl font-bold text-gray-900" id="statActiveScholars">
+                <?= esc($stats['active_scholars'] ?? 0) ?>
+            </h3>
         </div>
-        
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Total Billing</div>
-           <div class="mt-1 text-3xl font-semibold text-gray-900">₱100,000<!--<?= number_format($stats['total_billing'] ?? 0, 2) ?>--></div>
-            <div class="mt-3 text-xs text-gray-500">For current semester</div>
+
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <p class="text-sm text-gray-500">Pending Bills</p>
+            <h3 class="mt-2 text-3xl font-bold text-gray-900" id="statPendingBills">
+                <?= esc($stats['pending_bills'] ?? 0) ?>
+            </h3>
         </div>
-        
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Pending Approval</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">
-                <?= esc($stats['pending_approval']) ?>
-            </div>
+
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <p class="text-sm text-gray-500">Pending Approval</p>
+            <h3 class="mt-2 text-3xl font-bold text-gray-900" id="statPendingApproval">
+                <?= esc($stats['pending_approval'] ?? 0) ?>
+            </h3>
         </div>
-        
-        <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
-            <div class="text-sm font-medium text-gray-500">Messages</div>
-            <div class="mt-1 text-3xl font-semibold text-gray-900">
-                <?= esc($stats['messages']) ?>
-            </div>
-    <!--        <div class="mt-3 text-xs text-indigo-600">3 unread</div>    -->
+
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <p class="text-sm text-gray-500">Unread Messages</p>
+            <h3 class="mt-2 text-3xl font-bold text-gray-900" id="statMessages">
+                <?= esc($stats['messages'] ?? 0) ?>
+            </h3>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        
-    <a href="<?= site_url('messages') ?>"
-           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
-            <h3 class="font-semibold text-gray-900">message</h3>
-            <p class="mt-1 text-sm text-gray-500">Message partner schools </p>
-            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View messages →</span>
-        </a>
-
-
-        <a href="<?= site_url('scholars') ?>" 
-            class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
-             <h3 class="font-semibold text-gray-900">School Scholars</h3>
-            <p class="mt-1 text-sm text-gray-500">Manage your school's scholars.</p>
-            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View scholars →</span>
-        </a>    
-
-        <a href="<?= site_url('school/billing') ?>"
-           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
-            <h3 class="font-semibold text-gray-900">Billing Records</h3>
-            <p class="mt-1 text-sm text-gray-500">Manage tuition and other fees.</p>
-            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">Post billing →</span>
-        </a>
-
-    <!--    <a href="<?= site_url('school/reports') ?>"
-           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
-            <h3 class="font-semibold text-gray-900">School Reports</h3>
-            <p class="mt-1 text-sm text-gray-500">Generate reports for your school.</p>
-            <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View reports →</span>
-        </a>    -->
-    </div>
-
-    <!-- Recent Updates -->
-    <section class="rounded-xl bg-white shadow-sm ring-1 ring-gray-200">
-        <header class="px-5 py-4 border-b border-gray-200">
-            <h2 class="font-semibold text-gray-800">Recent Updates</h2>
-        </header>
-        <div class="divide-y divide-gray-200">
-            <?php foreach(range(1, 5) as $i): ?>
-            <div class="px-5 py-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-900">Billing posted for <span class="font-medium">2nd Semester 2023</span></p>
-                        <p class="text-xs text-gray-500 mt-0.5">₱45,000 for 15 scholars</p>
-                    </div>
-                    <span class="text-xs text-gray-500">1 hour ago</span>   
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div class="mb-4 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Students by Course</h2>
+                    <p class="text-sm text-gray-500">Live course distribution of scholars</p>
                 </div>
+                <span class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                    Live Data
+                </span>
             </div>
-            <?php endforeach; ?>
+
+            <div class="relative mx-auto h-[320px] w-full max-w-[420px]">
+                <canvas id="coursePieChart"></canvas>
+            </div>
+
+            <div id="courseChartEmpty" class="hidden mt-4 text-center text-sm text-gray-500">
+                No course data available.
+            </div>
         </div>
-    </section>
+
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div class="mb-4 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Students by Status</h2>
+                    <p class="text-sm text-gray-500">Live scholar status distribution</p>
+                </div>
+                <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                    Auto Refresh
+                </span>
+            </div>
+
+            <div class="relative mx-auto h-[320px] w-full max-w-[420px]">
+                <canvas id="statusPieChart"></canvas>
+            </div>
+
+            <div id="statusChartEmpty" class="hidden mt-4 text-center text-sm text-gray-500">
+                No status data available.
+            </div>
+        </div>
+    </div>
+
+    <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-gray-900">Quick Overview</h2>
+            <p class="text-sm text-gray-500">Dashboard shortcuts for school management</p>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+            <a href="<?= site_url('messages') ?>"
+               class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
+                <h3 class="font-semibold text-gray-900">Message</h3>
+                <p class="mt-1 text-sm text-gray-500">Message partner schools</p>
+                <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View messages →</span>
+            </a>
+
+            <a href="<?= site_url('scholars') ?>" 
+               class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition">
+                <h3 class="font-semibold text-gray-900">School Scholars</h3>
+                <p class="mt-1 text-sm text-gray-500">Manage your school's scholars.</p>
+                <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">View scholars →</span>
+            </a>    
+
+            <a href="<?= site_url('school/billing') ?>"
+               class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition sm:col-span-2">
+                <h3 class="font-semibold text-gray-900">Billing Records</h3>
+                <p class="mt-1 text-sm text-gray-500">Manage tuition and other fees.</p>
+                <span class="mt-3 inline-flex text-indigo-600 group-hover:translate-x-0.5 transition-transform">Post billing →</span>
+            </a>
+        </div>
+    </div>
 </div>
 
 <?= $this->endSection() ?>

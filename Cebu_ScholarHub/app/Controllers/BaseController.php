@@ -2,6 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Models\ActivityNotificationModel;
+use App\Models\MessageModel;
+use Config\Services;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
@@ -54,5 +57,29 @@ abstract class BaseController extends Controller
         // Preload any models, libraries, etc, here.
 
         // E.g.: $this->session = service('session');
+        $user = auth_user();
+
+        $renderer = Services::renderer();
+
+        $renderer->setVar('navbar_notifications_enabled', false);
+        $renderer->setVar('navbar_notification_count', 0);
+        $renderer->setVar('navbar_notifications', []);
+        $renderer->setVar('navbar_chat_enabled', false);
+        $renderer->setVar('navbar_chat_unread_count', 0);
+
+        if ($user && in_array($user['role'] ?? '', ['admin', 'staff', 'school_admin', 'school_staff'], true)) {
+            $messageModel = new MessageModel();
+
+            $renderer->setVar('navbar_chat_enabled', true);
+            $renderer->setVar('navbar_chat_unread_count', $messageModel->countUnreadForUser((int) $user['id']));
+        }
+
+        if ($user && in_array($user['role'] ?? '', ['admin', 'staff'], true)) {
+            $notificationModel = new ActivityNotificationModel();
+
+            $renderer->setVar('navbar_notifications_enabled', true);
+            $renderer->setVar('navbar_notification_count', $notificationModel->countUnreadForRecipient((int) $user['id']));
+            $renderer->setVar('navbar_notifications', $notificationModel->getRecentForRecipient((int) $user['id']));
+        }
     }
 }

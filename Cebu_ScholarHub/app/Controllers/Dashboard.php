@@ -8,6 +8,7 @@ use App\Models\BillModel;
 use App\Models\MessageModel;
 use App\Models\ScholarModel;
 use App\Models\BillingBatchModel;
+use App\Models\ActivityNotificationModel;
 
 class Dashboard extends BaseController
 {
@@ -17,6 +18,7 @@ class Dashboard extends BaseController
     protected $messageModel;
     protected $scholarModel;
     protected $batchModel;
+    protected $activityNotificationModel;
 
     public function __construct()
     {
@@ -25,7 +27,8 @@ class Dashboard extends BaseController
         $this->billingModel = new BillModel();
         $this->messageModel = new MessageModel();
         $this->scholarModel = new ScholarModel();
-        $this->batchModel   = new BillingBatchModel();
+        $this->batchModel                = new BillingBatchModel();
+        $this->activityNotificationModel = new ActivityNotificationModel();
     }
 
     public function index()
@@ -41,7 +44,7 @@ class Dashboard extends BaseController
         ];
 
         // Attach school info for school-level users
-        if (in_array($user['role'], ['school_admin', 'school_staff']) && $user['school_id']) {
+        if (in_array($user['role'], ['school_admin', 'school_staff']) && !empty($user['school_id'])) {
             $data['school'] = $this->schoolModel->find($user['school_id']);
         }
 
@@ -82,6 +85,9 @@ class Dashboard extends BaseController
                     LIMIT 5
                 ")->getResultArray();
 
+                $data['school_activity_count'] = $this->activityNotificationModel->countUnreadForRecipient((int) $user['id']);
+                $data['school_activity_notifications'] = $this->activityNotificationModel->getRecentForRecipient((int) $user['id']);
+
                 $data['stats'] = [
                     'total_scholars'  => $this->scholarModel->where('status', 'active')->countAllResults(),
                     'active_schools'  => $this->schoolModel->countAllResults(),
@@ -94,8 +100,50 @@ class Dashboard extends BaseController
                 $data['pendingBatches'] = $pendingBatches;
                 $data['recentActivity'] = $recentActivity;
 
-                return view('dashboard/admin', $data);
+                $schoolChartData = $this->scholarModel
+                    ->select('schools.name as school_name, COUNT(scholars.id) as total')
+                    ->join('schools', 'schools.id = scholars.school_id', 'left')
+                    ->groupBy('schools.id, schools.name')
+                    ->orderBy('total', 'DESC')
+                    ->findAll();
 
+                $data['school_chart_labels'] = [];
+                $data['school_chart_totals'] = [];
+
+                foreach ($schoolChartData as $row) {
+                    $data['school_chart_labels'][] = !empty($row['school_name']) ? $row['school_name'] : 'No School';
+                    $data['school_chart_totals'][] = (int) $row['total'];
+                }
+
+                $courseChartData = $this->scholarModel
+                    ->select('course, COUNT(id) as total')
+                    ->groupBy('course')
+                    ->orderBy('total', 'DESC')
+                    ->findAll();
+
+                $data['course_chart_labels'] = [];
+                $data['course_chart_totals'] = [];
+
+                foreach ($courseChartData as $row) {
+                    $data['course_chart_labels'][] = !empty($row['course']) ? $row['course'] : 'No Course';
+                    $data['course_chart_totals'][] = (int) $row['total'];
+                }
+
+                $statusChartData = $this->scholarModel
+                    ->select('status, COUNT(id) as total')
+                    ->groupBy('status')
+                    ->orderBy('status', 'ASC')
+                    ->findAll();
+
+                $data['status_chart_labels'] = [];
+                $data['status_chart_totals'] = [];
+
+                foreach ($statusChartData as $row) {
+                    $data['status_chart_labels'][] = !empty($row['status']) ? ucfirst($row['status']) : 'No Status';
+                    $data['status_chart_totals'][] = (int) $row['total'];
+                }
+
+                return view('dashboard/admin', $data);
 
             /* ================================================================
              * STAFF DASHBOARD
@@ -129,6 +177,9 @@ class Dashboard extends BaseController
                     LIMIT 5
                 ")->getResultArray();
 
+                $data['school_activity_count'] = $this->activityNotificationModel->countUnreadForRecipient((int) $user['id']);
+                $data['school_activity_notifications'] = $this->activityNotificationModel->getRecentForRecipient((int) $user['id']);
+
                 $data['stats'] = [
                     'pending_reviews'  => $this->billingModel->where('status', 'pending')->countAllResults(),
                     'new_applications' => $this->scholarModel->where('created_at >=', date('Y-m-d', strtotime('-7 days')))->countAllResults(),
@@ -139,8 +190,50 @@ class Dashboard extends BaseController
                 $data['pendingBatches'] = $pendingBatches;
                 $data['recentMessages'] = $recentMessages;
 
-                return view('dashboard/staff', $data);
+                $schoolChartData = $this->scholarModel
+                    ->select('schools.name as school_name, COUNT(scholars.id) as total')
+                    ->join('schools', 'schools.id = scholars.school_id', 'left')
+                    ->groupBy('schools.id, schools.name')
+                    ->orderBy('total', 'DESC')
+                    ->findAll();
 
+                $data['school_chart_labels'] = [];
+                $data['school_chart_totals'] = [];
+
+                foreach ($schoolChartData as $row) {
+                    $data['school_chart_labels'][] = !empty($row['school_name']) ? $row['school_name'] : 'No School';
+                    $data['school_chart_totals'][] = (int) $row['total'];
+                }
+
+                $courseChartData = $this->scholarModel
+                    ->select('course, COUNT(id) as total')
+                    ->groupBy('course')
+                    ->orderBy('total', 'DESC')
+                    ->findAll();
+
+                $data['course_chart_labels'] = [];
+                $data['course_chart_totals'] = [];
+
+                foreach ($courseChartData as $row) {
+                    $data['course_chart_labels'][] = !empty($row['course']) ? $row['course'] : 'No Course';
+                    $data['course_chart_totals'][] = (int) $row['total'];
+                }
+
+                $statusChartData = $this->scholarModel
+                    ->select('status, COUNT(id) as total')
+                    ->groupBy('status')
+                    ->orderBy('status', 'ASC')
+                    ->findAll();
+
+                $data['status_chart_labels'] = [];
+                $data['status_chart_totals'] = [];
+
+                foreach ($statusChartData as $row) {
+                    $data['status_chart_labels'][] = !empty($row['status']) ? ucfirst($row['status']) : 'No Status';
+                    $data['status_chart_totals'][] = (int) $row['total'];
+                }
+
+                return view('dashboard/staff', $data);
 
             /* ================================================================
              * SCHOOL ADMIN DASHBOARD
@@ -188,8 +281,37 @@ class Dashboard extends BaseController
 
                 $data['myBatches'] = $myBatches;
 
-                return view('dashboard/school_admin', $data);
+                $courseChartData = $this->scholarModel
+                    ->select('course, COUNT(id) as total')
+                    ->where('school_id', $schoolId)
+                    ->groupBy('course')
+                    ->orderBy('total', 'DESC')
+                    ->findAll();
 
+                $data['course_chart_labels'] = [];
+                $data['course_chart_totals'] = [];
+
+                foreach ($courseChartData as $row) {
+                    $data['course_chart_labels'][] = !empty($row['course']) ? $row['course'] : 'No Course';
+                    $data['course_chart_totals'][] = (int) $row['total'];
+                }
+
+                $statusChartData = $this->scholarModel
+                    ->select('status, COUNT(id) as total')
+                    ->where('school_id', $schoolId)
+                    ->groupBy('status')
+                    ->orderBy('status', 'ASC')
+                    ->findAll();
+
+                $data['status_chart_labels'] = [];
+                $data['status_chart_totals'] = [];
+
+                foreach ($statusChartData as $row) {
+                    $data['status_chart_labels'][] = !empty($row['status']) ? ucfirst($row['status']) : 'No Status';
+                    $data['status_chart_totals'][] = (int) $row['total'];
+                }
+
+                return view('dashboard/school_admin', $data);
 
             /* ================================================================
              * SCHOOL STAFF DASHBOARD
@@ -227,8 +349,37 @@ class Dashboard extends BaseController
 
                 $data['myBatches'] = $myBatches;
 
-                return view('dashboard/school_staff', $data);
+                $courseChartData = $this->scholarModel
+                    ->select('course, COUNT(id) as total')
+                    ->where('school_id', $schoolId)
+                    ->groupBy('course')
+                    ->orderBy('total', 'DESC')
+                    ->findAll();
 
+                $data['course_chart_labels'] = [];
+                $data['course_chart_totals'] = [];
+
+                foreach ($courseChartData as $row) {
+                    $data['course_chart_labels'][] = !empty($row['course']) ? $row['course'] : 'No Course';
+                    $data['course_chart_totals'][] = (int) $row['total'];
+                }
+
+                $statusChartData = $this->scholarModel
+                    ->select('status, COUNT(id) as total')
+                    ->where('school_id', $schoolId)
+                    ->groupBy('status')
+                    ->orderBy('status', 'ASC')
+                    ->findAll();
+
+                $data['status_chart_labels'] = [];
+                $data['status_chart_totals'] = [];
+
+                foreach ($statusChartData as $row) {
+                    $data['status_chart_labels'][] = !empty($row['status']) ? ucfirst($row['status']) : 'No Status';
+                    $data['status_chart_totals'][] = (int) $row['total'];
+                }
+
+                return view('dashboard/school_staff', $data);
 
             /* ================================================================
              * SCHOLAR DASHBOARD
@@ -246,40 +397,221 @@ class Dashboard extends BaseController
         }
     }
 
-
-    /* =====================================================
-       LIVE SYSTEM SUMMARY (ADDED — DOES NOT CHANGE LOGIC)
-       ===================================================== */
-
     public function liveStats()
     {
-        $user = auth_user();
+        $user = session()->get('auth_user');
 
         if (!$user) {
             return $this->response->setJSON(['error' => 'Unauthorized']);
         }
 
-        $stats = [
-            'total_scholars' =>
-                $this->scholarModel->where('status', 'active')->countAllResults(),
+        $stats = [];
+        $schoolLabels = [];
+        $schoolTotals = [];
+        $courseLabels = [];
+        $courseTotals = [];
+        $statusLabels = [];
+        $statusTotals = [];
 
-            'active_schools' =>
-                $this->schoolModel->countAllResults(),
+        switch ($user['role']) {
 
-            'pending_bills' =>
-                $this->billingModel->where('status', 'pending')->countAllResults(),
+            case 'admin':
+                $stats = [
+                    'total_scholars' =>
+                        $this->scholarModel->where('status', 'active')->countAllResults(),
 
-            'messages' =>
-                $this->messageModel
-                    ->where('receiver_id', $user['id'])
-                    ->where('is_read', 0)
-                    ->countAllResults()
-        ];
+                    'active_schools' =>
+                        $this->schoolModel->countAllResults(),
+
+                    'pending_bills' =>
+                        $this->billingModel->where('status', 'pending')->countAllResults(),
+
+                    'messages' =>
+                        $this->messageModel
+                            ->where('receiver_id', $user['id'])
+                            ->where('is_read', 0)
+                            ->countAllResults()
+                ];
+
+                $schoolChartData = $this->schoolModel
+                    ->select('schools.name as school_name, COUNT(scholars.id) as total')
+                    ->join('scholars', 'scholars.school_id = schools.id', 'left')
+                    ->groupBy('schools.id, schools.name')
+                    ->orderBy('schools.name', 'ASC')
+                    ->findAll();
+
+                foreach ($schoolChartData as $row) {
+                    $schoolLabels[] = !empty($row['school_name']) ? $row['school_name'] : 'No School';
+                    $schoolTotals[] = (int) $row['total'];
+                }
+
+                $courseChartData = $this->scholarModel
+                    ->select('course, COUNT(id) as total')
+                    ->groupBy('course')
+                    ->orderBy('course', 'ASC')
+                    ->findAll();
+
+                foreach ($courseChartData as $row) {
+                    $courseLabels[] = !empty($row['course']) ? $row['course'] : 'No Course';
+                    $courseTotals[] = (int) $row['total'];
+                }
+
+                $statusChartData = $this->scholarModel
+                    ->select('status, COUNT(id) as total')
+                    ->groupBy('status')
+                    ->orderBy('status', 'ASC')
+                    ->findAll();
+
+                foreach ($statusChartData as $row) {
+                    $statusLabels[] = !empty($row['status']) ? ucfirst($row['status']) : 'No Status';
+                    $statusTotals[] = (int) $row['total'];
+                }
+
+                break;
+
+            case 'staff':
+                $stats = [
+                    'pending_reviews' =>
+                        $this->billingModel->where('status', 'pending')->countAllResults(),
+
+                    'new_applications' =>
+                        $this->scholarModel->where('created_at >=', date('Y-m-d', strtotime('-7 days')))
+                                           ->countAllResults(),
+
+                    'school_updates' =>
+                        $this->activityNotificationModel->countUnreadForRecipient((int) $user['id']),
+
+                    'messages' =>
+                        $this->messageModel
+                            ->where('receiver_id', $user['id'])
+                            ->where('is_read', 0)
+                            ->countAllResults()
+                ];
+
+                $schoolChartData = $this->schoolModel
+                    ->select('schools.name as school_name, COUNT(scholars.id) as total')
+                    ->join('scholars', 'scholars.school_id = schools.id', 'left')
+                    ->groupBy('schools.id, schools.name')
+                    ->orderBy('schools.name', 'ASC')
+                    ->findAll();
+
+                foreach ($schoolChartData as $row) {
+                    $schoolLabels[] = !empty($row['school_name']) ? $row['school_name'] : 'No School';
+                    $schoolTotals[] = (int) $row['total'];
+                }
+
+                $courseChartData = $this->scholarModel
+                    ->select('course, COUNT(id) as total')
+                    ->groupBy('course')
+                    ->orderBy('course', 'ASC')
+                    ->findAll();
+
+                foreach ($courseChartData as $row) {
+                    $courseLabels[] = !empty($row['course']) ? $row['course'] : 'No Course';
+                    $courseTotals[] = (int) $row['total'];
+                }
+
+                $statusChartData = $this->scholarModel
+                    ->select('status, COUNT(id) as total')
+                    ->groupBy('status')
+                    ->orderBy('status', 'ASC')
+                    ->findAll();
+
+                foreach ($statusChartData as $row) {
+                    $statusLabels[] = !empty($row['status']) ? ucfirst($row['status']) : 'No Status';
+                    $statusTotals[] = (int) $row['total'];
+                }
+
+                break;
+
+            case 'school_admin':
+            case 'school_staff':
+                $schoolId = $user['school_id'];
+
+                $stats = [
+                    'active_scholars' =>
+                        $this->scholarModel
+                            ->where('school_id', $schoolId)
+                            ->where('status', 'active')
+                            ->countAllResults(),
+
+                    'pending_bills' =>
+                        $this->billingModel
+                            ->select('bills.*')
+                            ->join('scholars', 'scholars.id = bills.scholar_id')
+                            ->where('scholars.school_id', $schoolId)
+                            ->where('bills.status', 'pending')
+                            ->countAllResults(),
+
+                    'messages' =>
+                        $this->messageModel
+                            ->where('receiver_id', $user['id'])
+                            ->where('is_read', 0)
+                            ->countAllResults()
+                ];
+
+                if ($user['role'] === 'school_staff') {
+                    $stats['requirements_due'] = 0;
+                }
+
+                $school = $this->schoolModel->find($schoolId);
+                $schoolName = $school['name'] ?? 'My School';
+
+                $schoolScholarTotal = $this->scholarModel
+                    ->where('school_id', $schoolId)
+                    ->countAllResults();
+
+                $schoolLabels[] = $schoolName;
+                $schoolTotals[] = (int) $schoolScholarTotal;
+
+                $courseChartData = $this->scholarModel
+                    ->select('course, COUNT(id) as total')
+                    ->where('school_id', $schoolId)
+                    ->groupBy('course')
+                    ->orderBy('course', 'ASC')
+                    ->findAll();
+
+                foreach ($courseChartData as $row) {
+                    $courseLabels[] = !empty($row['course']) ? $row['course'] : 'No Course';
+                    $courseTotals[] = (int) $row['total'];
+                }
+
+                $statusChartData = $this->scholarModel
+                    ->select('status, COUNT(id) as total')
+                    ->where('school_id', $schoolId)
+                    ->groupBy('status')
+                    ->orderBy('status', 'ASC')
+                    ->findAll();
+
+                foreach ($statusChartData as $row) {
+                    $statusLabels[] = !empty($row['status']) ? ucfirst($row['status']) : 'No Status';
+                    $statusTotals[] = (int) $row['total'];
+                }
+
+                break;
+
+            default:
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Invalid role'
+                ]);
+        }
 
         return $this->response->setJSON([
-    'status' => 'success',
-    'stats' => $stats
-]);
+            'status' => 'success',
+            'stats' => $stats,
+            'school_chart' => [
+                'labels' => $schoolLabels,
+                'totals' => $schoolTotals
+            ],
+            'course_chart' => [
+                'labels' => $courseLabels,
+                'totals' => $courseTotals
+            ],
+            'status_chart' => [
+                'labels' => $statusLabels,
+                'totals' => $statusTotals
+            ]
+        ]);
     }
-
 }
