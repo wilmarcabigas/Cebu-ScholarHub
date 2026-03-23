@@ -76,16 +76,16 @@ class UserModel extends Model
 
     public function getUsersWithSchool()
     {
-        return $this->select('users.*, schools.name as school_name')
-            ->join('schools', 'schools.id = users.school_id', 'left')
-            ->findAll();
+        return $this->select('users.id, users.email, users.password_hash, users.full_name, users.role, users.school_id, users.status, users.last_login_at, users.created_at, users.updated_at, users.deleted_at, schools.name as school_name')
+                   ->join('schools', 'schools.id = users.school_id', 'left')
+                   ->findAll();
     }
 
     public function getUserById(int $id): ?array
     {
-        return $this->select('users.*, schools.name as school_name')
-            ->join('schools', 'schools.id = users.school_id', 'left')
-            ->where('users.id', $id)
-            ->first();
+        return $this->select('users.id, users.email, users.password_hash, users.full_name, users.role, users.school_id, users.status, users.last_login_at, users.created_at, users.updated_at, users.deleted_at, schools.name as school_name')
+                   ->join('schools', 'schools.id = users.school_id', 'left')
+                   ->where('users.id', $id)
+                   ->first();
     }
 }

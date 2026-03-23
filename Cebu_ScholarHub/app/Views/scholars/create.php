@@ -93,8 +93,17 @@
           <input type="number" name="year_level" value="<?= old('year_level') ?>" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required>
         </div>
         <div class="form-group">
+          <label for="scholarship_type" class="block text-sm font-medium text-gray-700">Scholarship Type <span class="text-red-500">*</span></label>
+          <select name="scholarship_type" id="scholarship_type" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required onchange="updateSemesterMax(this.value)">
+            <option value="4_semester" <?= old('scholarship_type') === '4_semester' || old('scholarship_type') === '' ? 'selected' : '' ?>>4-Semester</option>
+            <option value="8_semester" <?= old('scholarship_type') === '8_semester' ? 'selected' : '' ?>>8-Semester</option>
+            <option value="10_semester" <?= old('scholarship_type') === '10_semester' ? 'selected' : '' ?>>10-Semester</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="semesters_acquired" class="block text-sm font-medium text-gray-700">Semesters Acquired <span class="text-red-500">*</span></label>
-          <input type="number" name="semesters_acquired" value="<?= old('semesters_acquired') ?>" min="1" max="8" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required>
+          <input type="number" name="semesters_acquired" id="semesters_acquired_input" value="<?= old('semesters_acquired', 1) ?>" min="1" max="4" class="mt-1 p-2 border border-gray-300 rounded-md w-full" required>
+          <p class="text-xs text-gray-400 mt-1">Max: <span id="sem_max_label">4</span> for selected type</p>
         </div>
         <div class="form-group">
           <label for="status" class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>
@@ -178,4 +187,17 @@
   </form>
 </div>
 
+<script>
+  function updateSemesterMax(type) {
+    const maxMap = { '4_semester': 4, '8_semester': 8, '10_semester': 10 };
+    const max = maxMap[type] || 4;
+    const input = document.getElementById('semesters_acquired_input');
+    const label = document.getElementById('sem_max_label');
+    input.max = max;
+    label.textContent = max;
+    if (parseInt(input.value) > max) input.value = max;
+  }
+  // Init on page load in case of old() repopulation
+  updateSemesterMax(document.getElementById('scholarship_type').value);
+</script>
 <?= $this->endSection() ?>

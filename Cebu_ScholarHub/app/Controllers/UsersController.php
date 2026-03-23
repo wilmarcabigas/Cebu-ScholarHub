@@ -34,7 +34,7 @@ public function index()
     $sort     = $this->request->getGet('sort') ?? 'desc';
 
     $builder = $this->userModel
-        ->select('users.*, schools.name as school_name')
+        ->select('users.id, users.email, users.password_hash, users.full_name, users.role, users.school_id, users.status, users.last_login_at, users.created_at, users.updated_at, users.deleted_at, schools.name as school_name')
         ->join('schools', 'schools.id = users.school_id', 'left');
 
     // 🔍 SEARCH

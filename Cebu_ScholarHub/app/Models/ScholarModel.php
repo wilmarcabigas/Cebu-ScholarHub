@@ -24,6 +24,9 @@ class ScholarModel extends Model
         'date_of_birth',
         'email',
         'semesters_acquired',
+        'scholarship_type',
+        'upgraded_at',
+        'upgraded_by',
         'voucher_no',
         'name_extension',
         'address',
@@ -58,7 +61,8 @@ class ScholarModel extends Model
 
 'email' => 'required|valid_email',
 
-'semesters_acquired' => 'required|is_natural_no_zero|less_than_equal_to[8]',
+'semesters_acquired' => 'required|is_natural_no_zero|less_than_equal_to[10]',
+'scholarship_type'   => 'required|in_list[4_semester,8_semester,10_semester]',
 
 'voucher_no' => 'required|min_length[3]|max_length[50]',
 
@@ -115,6 +119,18 @@ class ScholarModel extends Model
 
     return $rules;
 }
+
+    /**
+     * Returns the max semesters allowed for a given scholarship_type.
+     */
+    public static function maxSemesters(string $type): int
+    {
+        return match($type) {
+            '8_semester'  => 8,
+            '10_semester' => 10,
+            default       => 4,
+        };
+    }
 
     // Optional: Search functionality
     public function search($searchTerm)

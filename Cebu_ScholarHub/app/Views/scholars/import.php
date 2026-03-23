@@ -149,23 +149,24 @@
 
         <div class="text-xs text-blue-800 space-y-1">
             <p>1. Semesters Acquired</p>
-            <p>2. Voucher No.</p>
-            <p>3. Last Name</p>
-            <p>4. First Name</p>
-            <p>5. Middle Name</p>
-            <p>6. Extension</p>
-            <p>7. Gender (male/female/other)</p>
-            <p>8. Course</p>
-            <p>9. Year Level (1-4)</p>
-            <p>10. Status (active/on-hold/graduated)</p>
-            <p>11. Birthdate</p>
-            <p>12. Address</p>
-            <p>13. Contact No.</p>
-            <p>14. Email Address</p>
-            <p>15. LRN No. (12 digits)</p>
-            <p>16. School (Elementary)</p>
-            <p>17. School (Junior)</p>
-            <p>18. School (Senior High School)</p>
+            <p>2. Scholarship Type (4_semester / 8_semester / 10_semester)</p>
+            <p>3. Voucher No.</p>
+            <p>4. Last Name</p>
+            <p>5. First Name</p>
+            <p>6. Middle Name</p>
+            <p>7. Extension</p>
+            <p>8. Gender (male/female/other)</p>
+            <p>9. Course</p>
+            <p>10. Year Level (1-4)</p>
+            <p>11. Status (active/on-hold/graduated)</p>
+            <p>12. Birthdate</p>
+            <p>13. Address</p>
+            <p>14. Contact No.</p>
+            <p>15. Email Address</p>
+            <p>16. LRN No. (12 digits)</p>
+            <p>17. School (Elementary)</p>
+            <p>18. School (Junior)</p>
+            <p>19. School (Senior High School)</p>
         </div>
     </div>
 
