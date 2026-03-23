@@ -7,6 +7,7 @@ use App\Models\SchoolModel;
 use App\Models\BillModel;
 use App\Models\MessageModel;
 use App\Models\ScholarModel;
+use App\Models\ActivityNotificationModel;
 
 class Dashboard extends BaseController
 {
@@ -15,6 +16,7 @@ class Dashboard extends BaseController
     protected $billingModel;
     protected $messageModel;
     protected $scholarModel;
+    protected $activityNotificationModel;
 
     public function __construct()
     {
@@ -23,6 +25,7 @@ class Dashboard extends BaseController
         $this->billingModel = new BillModel();
         $this->messageModel = new MessageModel();
         $this->scholarModel = new ScholarModel();
+        $this->activityNotificationModel = new ActivityNotificationModel();
     }
 
     public function index()
@@ -45,6 +48,9 @@ class Dashboard extends BaseController
 
             /* ================= ADMIN DASHBOARD ================= */
             case 'admin':
+                $data['school_activity_count'] = $this->activityNotificationModel->countUnreadForRecipient((int) $user['id']);
+                $data['school_activity_notifications'] = $this->activityNotificationModel->getRecentForRecipient((int) $user['id']);
+
                 $data['stats'] = [
                     'total_scholars' =>
                         $this->scholarModel->where('status', 'active')->countAllResults(),
@@ -108,6 +114,9 @@ class Dashboard extends BaseController
 
             /* ================= STAFF DASHBOARD ================= */
             case 'staff':
+                $data['school_activity_count'] = $this->activityNotificationModel->countUnreadForRecipient((int) $user['id']);
+                $data['school_activity_notifications'] = $this->activityNotificationModel->getRecentForRecipient((int) $user['id']);
+
                 $data['stats'] = [
                     'pending_reviews' =>
                         $this->billingModel->where('status', 'pending')->countAllResults(),
@@ -117,7 +126,7 @@ class Dashboard extends BaseController
                                            ->countAllResults(),
 
                     'school_updates' =>
-                        $this->billingModel->countAllResults(),
+                        $data['school_activity_count'],
 
                     'messages' =>
                         $this->messageModel->where('receiver_id', $user['id'])
@@ -394,7 +403,7 @@ class Dashboard extends BaseController
                                            ->countAllResults(),
 
                     'school_updates' =>
-                        $this->billingModel->countAllResults(),
+                        $this->activityNotificationModel->countUnreadForRecipient((int) $user['id']),
 
                     'messages' =>
                         $this->messageModel

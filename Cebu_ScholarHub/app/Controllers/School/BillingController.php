@@ -3,16 +3,24 @@
 namespace App\Controllers\School;
 
 use App\Controllers\BaseController;
+use App\Libraries\ActivityNotifier;
 use App\Models\BillModel;
-use App\Models\ScholarModel;    
+use App\Models\ScholarModel;
+use App\Models\SchoolModel;
 
 class BillingController extends BaseController
 {
     protected $billModel;
+    protected $scholarModel;
+    protected $schoolModel;
+    protected $activityNotifier;
 
     public function __construct()
     {
         $this->billModel = new BillModel();
+        $this->scholarModel = new ScholarModel();
+        $this->schoolModel = new SchoolModel();
+        $this->activityNotifier = new ActivityNotifier();
     }
 
     public function index()
@@ -41,10 +49,8 @@ class BillingController extends BaseController
         return redirect()->back()->with('error', 'Unauthorized access');
     }
 
-       $scholarModel = new ScholarModel();
-
         $schoolId = auth_user()['school_id']; 
-        $data['scholars'] = $scholarModel->getBySchoolId($schoolId);
+        $data['scholars'] = $this->scholarModel->getBySchoolId($schoolId);
 
         return view('bills/create', [
             'show_back' => true,
@@ -54,8 +60,9 @@ class BillingController extends BaseController
     }
 
     public function store()
-    {   
-        $this->billModel->insert([
+    {
+        $authUser = auth_user();
+        $billId = $this->billModel->insert([
             'scholar_id'     => $this->request->getPost('scholar_id'),
             'billing_period' => $this->request->getPost('billing_period'),
             'amount_due'     => $this->request->getPost('amount_due'),
@@ -64,6 +71,24 @@ class BillingController extends BaseController
             'remarks'        => $this->request->getPost('remarks'),
             'posted_by'      => auth_user()['id'],
         ]);
+
+        if ($billId) {
+            $scholar = $this->scholarModel->find((int) $this->request->getPost('scholar_id'));
+            $school = $this->schoolModel->find($authUser['school_id']);
+            $scholarName = $scholar
+                ? trim(($scholar['first_name'] ?? '') . ' ' . ($scholar['last_name'] ?? ''))
+                : 'a scholar';
+            $schoolName = $school['name'] ?? 'Unknown School';
+
+            $this->activityNotifier->notifySchoolActivity(
+                $authUser,
+                'bill_posted',
+                'New bill posted',
+                "{$authUser['full_name']} posted a bill for {$scholarName} from {$schoolName}.",
+                site_url('school/billing'),
+                (int) $authUser['school_id']
+            );
+        }
 
         return redirect()->to('/school/billing')->with('success', 'Billing posted successfully');
     }

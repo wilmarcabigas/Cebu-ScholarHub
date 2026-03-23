@@ -25,7 +25,7 @@
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">
             <div class="text-sm font-medium text-gray-500">School Updates</div>
             <div class="mt-1 text-3xl font-semibold text-gray-900"><?= esc($stats['school_updates']) ?></div>
-            <div class="mt-3 text-xs text-indigo-600">From 5 schools</div> 
+            <div class="mt-3 text-xs text-indigo-600">Unread activity notifications</div> 
         </div>
         
         <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-5">

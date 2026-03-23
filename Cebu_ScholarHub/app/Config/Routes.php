@@ -83,7 +83,13 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
        $routes->group('messages', ['filter' => 'role:admin,staff,school_admin,school_staff'], static function($routes) {
     $routes->get('', 'Messages::index');
     $routes->get('chat/(:num)', 'Messages::chat/$1');
+    $routes->get('fetch/(:num)', 'Messages::fetch/$1');
+    $routes->get('unread-summary', 'Messages::unreadSummary');
     $routes->post('send', 'Messages::send');
+});
+
+       $routes->group('notifications', ['filter' => 'role:admin,staff'], static function($routes) {
+    $routes->post('mark-all-read', 'NotificationsController::markAllRead');
 });
 });
 
