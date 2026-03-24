@@ -141,6 +141,19 @@
 
     </form>
 
+    <!-- Download Template -->
+    <div class="mt-4 text-center">
+        <a href="<?= site_url('scholars/download-template') ?>"
+           class="inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700
+                  text-white text-sm font-semibold rounded-full shadow transition duration-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Download Excel Template
+        </a>
+        <p class="text-xs text-gray-400 mt-1">Pre-filled with the correct column headers and a sample row</p>
+    </div>
+
     <!-- Reference Info -->
     <div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
         <h3 class="text-sm font-semibold text-blue-900 mb-2">

@@ -107,6 +107,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
     $routes->get('import', 'ScholarController::importForm');
     $routes->post('import', 'ScholarController::importExcel');
+    $routes->get('download-template', 'ScholarController::downloadTemplate');
 });
 
 

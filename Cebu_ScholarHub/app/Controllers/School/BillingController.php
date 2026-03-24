@@ -145,7 +145,7 @@ class BillingController extends BaseController
             'batch_created',
             'New billing batch created',
             "{$authUser['full_name']} created a billing batch from {$schoolName}.",
-            site_url('school/billing'),
+            site_url('admin/billing'),
             (int) $authUser['school_id']
         );
 

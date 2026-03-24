@@ -7,6 +7,10 @@ use App\Models\ScholarModel;
 use App\Models\SchoolModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
 class ScholarController extends BaseController
@@ -318,6 +322,103 @@ class ScholarController extends BaseController
 
         // Serve file with download headers
         return $this->response->download($filepath, null);
+    }
+
+    /**
+     * Download an Excel import template with headers and one sample row.
+     */
+    public function downloadTemplate()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Scholars Import');
+
+        $headers = [
+            'Semesters Acquired',
+            'Scholarship Type',
+            'Voucher No.',
+            'Last Name',
+            'First Name',
+            'Middle Name',
+            'Extension',
+            'Gender',
+            'Course',
+            'Year Level',
+            'Status',
+            'Birthdate',
+            'Address',
+            'Contact No.',
+            'Email Address',
+            'LRN No.',
+            'School (Elementary)',
+            'School (Junior)',
+            'School (Senior High School)',
+        ];
+
+        // Write headers
+        foreach ($headers as $col => $header) {
+            $cell = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1) . '1';
+            $sheet->setCellValue($cell, $header);
+        }
+
+        // Style header row
+        $lastCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers));
+        $headerRange = "A1:{$lastCol}1";
+        $sheet->getStyle($headerRange)->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4F46E5']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+        ]);
+
+        // Sample data row
+        $sample = [
+            '1',                    // semesters acquired
+            '4_semester',           // scholarship type
+            'VCH-2024-001',         // voucher no.
+            'Dela Cruz',            // last name
+            'Juan',                 // first name
+            'Santos',               // middle name
+            '',                     // extension (Jr., Sr., III, etc.)
+            'Male',                 // gender
+            'BS Information Technology', // course
+            '1',                    // year level (1-4)
+            'active',               // status
+            '2000-01-15',           // birthdate (YYYY-MM-DD)
+            'Brgy. Sample, Cebu City', // address
+            '09171234567',          // contact no.
+            'juandelacruz@email.com', // email address
+            '123456789012',         // lrn no. (12 digits)
+            'Sample Elementary School', // school (elementary)
+            'Sample Junior High School', // school (junior)
+            'Sample Senior High School', // school (senior high school)
+        ];
+
+        foreach ($sample as $col => $value) {
+            $cell = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1) . '2';
+            $sheet->setCellValueExplicit($cell, $value, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        }
+
+        // Style sample row
+        $sampleRange = "A2:{$lastCol}2";
+        $sheet->getStyle($sampleRange)->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EEF2FF']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+        ]);
+
+        // Auto-size columns
+        foreach (range(1, count($headers)) as $col) {
+            $sheet->getColumnDimensionByColumn($col)->setAutoSize(true);
+        }
+
+        // Output as .xlsx download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="scholars_import_template.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+        exit;
     }
 
     public function importForm()

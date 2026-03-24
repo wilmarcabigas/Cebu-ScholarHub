@@ -50,8 +50,8 @@ class Messages extends BaseController
         foreach ($users as &$user) {
             $user['display_name'] = $user['school_name'] ?? $user['full_name'] ?? 'Unnamed User';
             $latestMessage = $this->messageModel->getLatestMessageBetween($myId, (int) $user['id']);
-            $user['last_message'] = $latestMessage['message'] ?? 'No messages yet.';
-            $user['last_message_at'] = $latestMessage['created_at'] ?? null;
+            $user['last_message'] = $latestMessage['message_body'] ?? 'No messages yet.';
+            $user['last_message_at'] = $latestMessage['sent_at'] ?? null;
             $user['unread_count'] = $this->messageModel->getUnreadCountFromSender($myId, (int) $user['id']);
         }
         unset($user);
@@ -167,11 +167,11 @@ class Messages extends BaseController
         }
 
         $messageId = $this->messageModel->insert([
-            'sender_id'   => $myId,
-            'receiver_id' => $receiverId,
-            'message'     => $message,
-            'is_read'     => 0,
-            'created_at'  => date('Y-m-d H:i:s'),
+            'sender_id'    => $myId,
+            'receiver_id'  => $receiverId,
+            'message_body' => $message,
+            'is_read'      => 0,
+            'sent_at'      => date('Y-m-d H:i:s'),
         ]);
 
         if ($this->request->isAJAX()) {

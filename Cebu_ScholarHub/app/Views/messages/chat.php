@@ -113,7 +113,7 @@
                                         <?= $isMine ? 'You' : esc($otherName) ?>
                                     </div>
                                     <div class="rounded-[22px] px-4 py-3 text-sm leading-6 shadow-sm ring-1 <?= $isMine ? 'bg-indigo-600 text-white ring-indigo-500/40 rounded-br-md' : 'bg-white text-slate-800 ring-slate-200 rounded-bl-md' ?>">
-                                        <?= nl2br(esc($msg['message'])) ?>
+                                        <?= nl2br(esc($msg['message_body'])) ?>
                                     </div>
                                 </div>
                             </div>
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             ${isMine ? 'You' : escapeHtml(otherName)}
                         </div>
                         <div class="rounded-[22px] px-4 py-3 text-sm leading-6 shadow-sm ring-1 ${isMine ? 'bg-indigo-600 text-white ring-indigo-500/40 rounded-br-md' : 'bg-white text-slate-800 ring-slate-200 rounded-bl-md'}">
-                            ${escapeHtml(msg.message).replace(/\n/g, '<br>')}
+                            ${escapeHtml(msg.message_body).replace(/\n/g, '<br>')}
                         </div>
                     </div>
                 </div>

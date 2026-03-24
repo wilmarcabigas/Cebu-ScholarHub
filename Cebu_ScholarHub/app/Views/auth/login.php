@@ -73,7 +73,7 @@
 
   <!-- NORMAL LOGIN -->
   <?php if (! $unlockMode && ! $verifyMode && ! $resetMode): ?>
-    <form method="post" action="<?= site_url('login') ?>" class="space-y-5">
+    <form method="post" action="<?= site_url('login') ?>" class="space-y-5" id="loginForm">
       <?= csrf_field() ?>
 
       <div>
@@ -104,9 +104,14 @@
 
       <button
         type="submit"
-        class="w-full inline-flex justify-center rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
+        id="loginBtn"
+        class="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-cyan-400/40 disabled:opacity-70 disabled:cursor-not-allowed disabled:scale-100"
       >
-        Verify
+        <span id="loginBtnText">Verify</span>
+        <svg id="loginSpinner" class="hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+        </svg>
       </button>
     </form>
   <?php endif; ?>
@@ -255,17 +260,69 @@
       </button>
     </form>
 
-    <form method="post" action="<?= site_url('login/resend-code') ?>" class="mt-4">
+    <form method="post" action="<?= site_url('login/resend-code') ?>" class="mt-4" id="resendForm">
       <?= csrf_field() ?>
       <button
         type="submit"
-        class="w-full inline-flex justify-center rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 backdrop-blur-xl transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20"
+        id="resendBtn"
+        class="w-full inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-slate-200 backdrop-blur-xl transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Resend Code
+        <span id="resendBtnText">Resend Code</span>
+        <svg id="resendSpinner" class="hidden h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+        </svg>
       </button>
     </form>
   <?php endif; ?>
 
 </div>
+
+<!-- Loading overlay (hidden by default) -->
+<div id="loadingOverlay" class="fixed inset-0 z-50 hidden flex-col items-center justify-center bg-black/70 backdrop-blur-sm">
+  <div class="flex flex-col items-center gap-4 rounded-3xl border border-white/10 bg-white/10 px-10 py-8 shadow-2xl backdrop-blur-xl">
+    <svg class="h-10 w-10 animate-spin text-cyan-300" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+    </svg>
+    <p class="text-sm font-semibold text-white" id="overlayMessage">Sending code to your Gmail…</p>
+    <p class="text-xs text-slate-300">This may take a few seconds. Please wait.</p>
+  </div>
+</div>
+
+<script>
+  function showLoadingOverlay(message) {
+    const overlay = document.getElementById('loadingOverlay');
+    document.getElementById('overlayMessage').textContent = message;
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+  }
+
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', function () {
+      const btn  = document.getElementById('loginBtn');
+      const text = document.getElementById('loginBtnText');
+      const spin = document.getElementById('loginSpinner');
+      btn.disabled = true;
+      text.textContent = 'Sending code…';
+      spin.classList.remove('hidden');
+      showLoadingOverlay('Sending verification code to your Gmail…');
+    });
+  }
+
+  const resendForm = document.getElementById('resendForm');
+  if (resendForm) {
+    resendForm.addEventListener('submit', function () {
+      const btn  = document.getElementById('resendBtn');
+      const text = document.getElementById('resendBtnText');
+      const spin = document.getElementById('resendSpinner');
+      btn.disabled = true;
+      text.textContent = 'Resending…';
+      spin.classList.remove('hidden');
+      showLoadingOverlay('Resending verification code to your Gmail…');
+    });
+  }
+</script>
 
 <?= $this->endSection() ?>
