@@ -100,7 +100,7 @@
             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">MI</th>
             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Yr</th>
-            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Control No.</th>
+            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">school</th>
             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">School</th>
             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Address / Barangay</th>
             <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
@@ -117,7 +117,7 @@
               <td class="px-3 py-2 text-gray-500"><?= esc($item['middle_name'][0] ?? '—') ?></td>
               <td class="px-3 py-2 text-gray-600"><?= esc($item['course'] ?? '—') ?></td>
               <td class="px-3 py-2 text-gray-600"><?= esc($item['year_level'] ?? '—') ?></td>
-              <td class="px-3 py-2 font-mono text-xs text-gray-500"><?= esc($item['control_no'] ?? $item['scholar_control_no'] ?? '—') ?></td>
+              <td class="px-3 py-2 font-mono text-xs text-gray-500"><?= esc($item['school_junior'] ?? '—') ?></td>
               <td class="px-3 py-2 text-xs text-gray-500"><?= esc($item['school_name'] ?? '—') ?></td>
               <td class="px-3 py-2 text-xs text-gray-500"><?= esc($item['address'] ?? $item['barangay'] ?? '—') ?></td>
               <td class="px-3 py-2 text-right font-semibold text-gray-700">₱<?= number_format($item['amount'], 2) ?></td>

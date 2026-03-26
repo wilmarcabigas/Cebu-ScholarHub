@@ -112,6 +112,17 @@ class AuthController extends BaseController
             ->with('success', 'Verification code sent to your Gmail.');
     }
 
+    // Cancel pending login and return to the login form
+    public function cancelLogin()
+    {
+        $session = Services::session();
+        $session->remove('pending_login_user_id');
+        $session->remove('pending_login_email');
+        $session->remove('pending_login_verified_password');
+
+        return redirect()->to('/login');
+    }
+
     // STEP 2: Verify login code
     public function verifyCode()
     {
