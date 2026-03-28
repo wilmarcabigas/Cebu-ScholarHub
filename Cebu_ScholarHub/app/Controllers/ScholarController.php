@@ -28,8 +28,9 @@ class ScholarController extends BaseController
 
     public function index()
     {
-        $authUser = session()->get('auth_user');
-        $selectedSchool = $this->request->getGet('school_id'); // get school filter from dropdown
+        $authUser        = session()->get('auth_user');
+        $selectedSchool  = $this->request->getGet('school_id');
+        $selectedSemester = $this->request->getGet('semester'); // '1st', '2nd', or ''
 
         $scholars = $this->scholarModel
             ->select('scholars.id, scholars.school_id, scholars.first_name, scholars.last_name, scholars.middle_name, scholars.gender, scholars.course, scholars.year_level, scholars.status, scholars.date_of_birth, scholars.email, scholars.semesters_acquired, scholars.scholarship_type, scholars.upgraded_at, scholars.voucher_no, scholars.name_extension, scholars.address, scholars.contact_no, scholars.lrn_no, scholars.school_elementary, scholars.school_junior, scholars.school_senior_high, scholars.created_at, scholars.updated_at, scholars.deleted_at, schools.name as school_name')
@@ -44,14 +45,22 @@ class ScholarController extends BaseController
             $scholars->where('scholars.school_id', $selectedSchool);
         }
 
+        // Semester filter: odd semesters_acquired = 1st sem, even = 2nd sem
+        if ($selectedSemester === '1st') {
+            $scholars->whereIn('scholars.semesters_acquired', [1, 3, 5, 7]);
+        } elseif ($selectedSemester === '2nd') {
+            $scholars->whereIn('scholars.semesters_acquired', [2, 4, 6, 8]);
+        }
+
         $data = [
-            'title'          => 'Manage Scholars',
-            'scholars'       => $scholars->findAll(),
-            'schools'        => $this->schoolModel->findAll(),
-            'selectedSchool' => $selectedSchool,
-            'user'           => $authUser,
-            'show_back'      => true,
-            'back_url'       => site_url('dashboard')
+            'title'             => 'Manage Scholars',
+            'scholars'          => $scholars->findAll(),
+            'schools'           => $this->schoolModel->findAll(),
+            'selectedSchool'    => $selectedSchool,
+            'selectedSemester'  => $selectedSemester,
+            'user'              => $authUser,
+            'show_back'         => true,
+            'back_url'          => site_url('dashboard')
         ];
 
         return view('scholars/index', $data);

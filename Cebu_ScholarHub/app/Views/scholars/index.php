@@ -25,14 +25,21 @@
     </div>
   </header>
 
-  <?php if (in_array($role, ['staff', 'admin'])): ?>
-    <div class="mb-4 flex flex-col sm:flex-row sm:items-end justify-between max-w-[595px] gap-4">
-      
-      <form method="get" action="<?= site_url('scholars') ?>" class="flex-1 relative">
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-          Filter by School
-        </label>
+  <?php
+    $semesterOptions = [
+      ''    => 'All Semesters',
+      '1st' => '1st Semester',
+      '2nd' => '2nd Semester',
+    ];
+  ?>
 
+  <?php if (in_array($role, ['staff', 'admin'])): ?>
+    <form method="get" action="<?= site_url('scholars') ?>"
+          class="mb-4 flex flex-col sm:flex-row sm:items-end gap-4 flex-wrap">
+
+      <!-- Filter by School (custom dropdown) -->
+      <div class="relative min-w-[200px] flex-1">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Filter by School</label>
         <button type="button" id="dropdownButton"
                 class="w-full bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500">
           <span id="dropdownLabel">
@@ -47,35 +54,71 @@
               echo esc($selectedSchoolName);
             ?>
           </span>
-          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
-
         <ul id="dropdownMenu" class="absolute z-10 hidden mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-          <li class="px-4 py-2 hover:bg-indigo-100 cursor-pointer" data-value="">
-            All Schools
-          </li>
+          <li class="px-4 py-2 hover:bg-indigo-100 cursor-pointer" data-value="">All Schools</li>
           <?php foreach ($schools as $school): ?>
             <li class="px-4 py-2 hover:bg-indigo-100 cursor-pointer" data-value="<?= $school['id'] ?>">
               <?= esc($school['name']) ?>
             </li>
           <?php endforeach; ?>
         </ul>
-
         <input type="hidden" name="school_id" id="schoolInput" value="<?= esc($selectedSchool) ?>">
-      </form>
+      </div>
 
-      <?php if (in_array($role, ['staff','school_admin','school_staff'])): ?>
-        <a href="<?= site_url('scholars/create') ?>" 
-           class="group rounded-xl bg-blue-600 ring-1 ring-blue-400 px-4 py-2 hover:shadow-lg transition whitespace-nowrap">
+      <!-- Filter by Semester -->
+      <div class="min-w-[200px]">
+        <label for="semesterSelect" class="block text-sm font-medium text-gray-700 mb-1">Filter by Semester</label>
+        <select id="semesterSelect" name="semester"
+                onchange="this.form.submit()"
+                class="w-full bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <?php foreach ($semesterOptions as $val => $label): ?>
+            <option value="<?= $val ?>" <?= ($selectedSemester ?? '') === $val ? 'selected' : '' ?>>
+              <?= $label ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
+      <?php if (in_array($role, ['staff', 'school_admin', 'school_staff'])): ?>
+        <a href="<?= site_url('scholars/create') ?>"
+           class="group rounded-xl bg-blue-600 ring-1 ring-blue-400 px-4 py-2 hover:shadow-lg transition whitespace-nowrap self-end">
           <div class="flex items-center gap-2">
             <span class="text-xs font-semibold text-white">Add New Scholar</span>
             <span class="text-white group-hover:translate-x-0.5 transition">→</span>
           </div>
         </a>
       <?php endif; ?>
-    </div>
+
+    </form>
+
+  <?php elseif (in_array($role, ['school_admin', 'school_staff'])): ?>
+    <!-- Semester filter for school roles -->
+    <form method="get" action="<?= site_url('scholars') ?>"
+          class="mb-4 flex flex-col sm:flex-row sm:items-end gap-4">
+      <div class="min-w-[200px]">
+        <label for="semesterSelectSchool" class="block text-sm font-medium text-gray-700 mb-1">Filter by Semester</label>
+        <select id="semesterSelectSchool" name="semester"
+                onchange="this.form.submit()"
+                class="w-full bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <?php foreach ($semesterOptions as $val => $label): ?>
+            <option value="<?= $val ?>" <?= ($selectedSemester ?? '') === $val ? 'selected' : '' ?>>
+              <?= $label ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <a href="<?= site_url('scholars/create') ?>"
+         class="group rounded-xl bg-blue-600 ring-1 ring-blue-400 px-4 py-2 hover:shadow-lg transition whitespace-nowrap self-end">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-white">Add New Scholar</span>
+          <span class="text-white group-hover:translate-x-0.5 transition">→</span>
+        </div>
+      </a>
+    </form>
   <?php endif; ?>
 
   <section class="mt-6">
