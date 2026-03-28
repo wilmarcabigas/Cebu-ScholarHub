@@ -31,6 +31,12 @@ class ActivityLogger
         $requestMeta = $this->captureRequestMeta();
         $createdAt = date('Y-m-d H:i:s');
         $metadata = $options['metadata'] ?? [];
+        $action = $options['action'] ?? 'update';
+        $subjectType = $options['subject_type'] ?? 'record';
+        $subjectId = (int) ($options['subject_id'] ?? 0);
+        $encodedMetadata = $this->encodeJson($metadata);
+        $encodedOldValues = $this->encodeJson($options['old_values'] ?? null);
+        $encodedNewValues = $this->encodeJson($options['new_values'] ?? null);
 
         $activityData = [
             'actor_user_id'  => $actor['id'] ?? null,
@@ -44,7 +50,7 @@ class ActivityLogger
             'request_path'   => $requestMeta['request_path'],
             'ip_address'     => $requestMeta['ip_address'],
             'user_agent'     => $requestMeta['user_agent'],
-            'metadata'       => $this->encodeJson($metadata),
+            'metadata'       => $encodedMetadata,
             'created_at'     => $createdAt,
         ];
 
@@ -55,16 +61,22 @@ class ActivityLogger
             'actor_user_id'   => $actor['id'] ?? null,
             'school_id'       => $options['school_id'] ?? ($actor['school_id'] ?? null),
             'event_type'      => $eventType,
-            'action'          => $options['action'] ?? 'update',
+            'action'          => $action,
             'auditable_type'  => $options['subject_type'] ?? null,
             'auditable_id'    => $options['subject_id'] ?? null,
-            'old_values'      => $this->encodeJson($options['old_values'] ?? null),
-            'new_values'      => $this->encodeJson($options['new_values'] ?? null),
-            'metadata'        => $this->encodeJson($metadata),
+            'old_values'      => $encodedOldValues,
+            'new_values'      => $encodedNewValues,
+            'metadata'        => $encodedMetadata,
             'request_method'  => $requestMeta['request_method'],
             'request_path'    => $requestMeta['request_path'],
             'ip_address'      => $requestMeta['ip_address'],
             'created_at'      => $createdAt,
+            'user_id'         => (int) ($actor['id'] ?? 0),
+            'action_type'     => $eventType,
+            'table_name'      => $subjectType,
+            'record_id'       => $subjectId,
+            'action_details'  => $encodedNewValues ?? $encodedMetadata ?? $description,
+            'action_time'     => $createdAt,
         ]);
 
         return $activityId ?: null;

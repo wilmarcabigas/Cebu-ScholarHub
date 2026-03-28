@@ -25,6 +25,12 @@ class AuditLogModel extends Model
         'request_path',
         'ip_address',
         'created_at',
+        'user_id',
+        'action_type',
+        'table_name',
+        'record_id',
+        'action_details',
+        'action_time',
     ];
 
     public function getRecentWithRelations(array $filters = [], int $limit = 50): array
