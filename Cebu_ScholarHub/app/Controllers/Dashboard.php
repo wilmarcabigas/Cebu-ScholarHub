@@ -100,6 +100,68 @@ class Dashboard extends BaseController
                 $data['pendingBatches'] = $pendingBatches;
                 $data['recentActivity'] = $recentActivity;
 
+                // --- New dashboard enhancements ---
+                $db = db_connect();
+
+                // Monthly enrollment trend (last 12 months)
+                $monthlyEnrollment = $db->query("
+                    SELECT DATE_FORMAT(created_at, '%b %Y') as month, COUNT(*) as count
+                    FROM scholars
+                    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+                      AND deleted_at IS NULL
+                    GROUP BY DATE_FORMAT(created_at, '%Y-%m'), DATE_FORMAT(created_at, '%b %Y')
+                    ORDER BY MIN(created_at) ASC
+                ")->getResultArray();
+                $data['enrollment_labels'] = array_column($monthlyEnrollment, 'month');
+                $data['enrollment_counts'] = array_map('intval', array_column($monthlyEnrollment, 'count'));
+
+                // Month-over-month for scholars added
+                $lastMonthStr    = date('Y-m', strtotime('-1 month'));
+                $currentMonthStr = date('Y-m');
+                $lastMonthScholars = (int) $db->query(
+                    "SELECT COUNT(*) as c FROM scholars WHERE DATE_FORMAT(created_at,'%Y-%m')=? AND deleted_at IS NULL",
+                    [$lastMonthStr]
+                )->getRow()->c;
+                $thisMonthScholars = (int) $db->query(
+                    "SELECT COUNT(*) as c FROM scholars WHERE DATE_FORMAT(created_at,'%Y-%m')=? AND deleted_at IS NULL",
+                    [$currentMonthStr]
+                )->getRow()->c;
+                $data['mom_scholars'] = $lastMonthScholars > 0
+                    ? round((($thisMonthScholars - $lastMonthScholars) / $lastMonthScholars) * 100, 1)
+                    : null;
+
+                // Month-over-month for submitted billing batches
+                $lastMonthBills = (int) $db->query(
+                    "SELECT COUNT(*) as c FROM billing_batches WHERE status='submitted' AND DATE_FORMAT(submitted_at,'%Y-%m')=?",
+                    [$lastMonthStr]
+                )->getRow()->c;
+                $thisMonthBills = (int) $db->query(
+                    "SELECT COUNT(*) as c FROM billing_batches WHERE status='submitted' AND DATE_FORMAT(submitted_at,'%Y-%m')=?",
+                    [$currentMonthStr]
+                )->getRow()->c;
+                $data['mom_bills'] = $lastMonthBills > 0
+                    ? round((($thisMonthBills - $lastMonthBills) / $lastMonthBills) * 100, 1)
+                    : null;
+
+                // Needs Attention: batches pending > 7 days
+                $data['attention_batches'] = $db->query("
+                    SELECT bb.id, bb.batch_label, bb.semester, bb.school_year,
+                           bb.total_amount, bb.submitted_at,
+                           DATEDIFF(NOW(), bb.submitted_at) AS days_pending,
+                           s.name AS school_name
+                    FROM billing_batches bb
+                    JOIN schools s ON bb.school_id = s.id
+                    WHERE bb.status = 'submitted'
+                      AND DATEDIFF(NOW(), bb.submitted_at) > 7
+                    ORDER BY days_pending DESC
+                    LIMIT 5
+                ")->getResultArray();
+
+                // Needs Attention: on-hold or disqualified scholars
+                $data['attention_scholars'] = (int) $db->query(
+                    "SELECT COUNT(*) as c FROM scholars WHERE status IN ('on-hold','disqualified') AND deleted_at IS NULL"
+                )->getRow()->c;
+
                 $schoolChartData = $this->scholarModel
                     ->select('schools.name as school_name, COUNT(scholars.id) as total')
                     ->join('schools', 'schools.id = scholars.school_id', 'left')

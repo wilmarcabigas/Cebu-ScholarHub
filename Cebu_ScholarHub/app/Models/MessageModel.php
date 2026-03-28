@@ -12,13 +12,14 @@ class MessageModel extends Model
     protected $allowedFields = [
         'sender_id',
         'receiver_id',
-        'message',
+        'subject',
+        'message_body',
         'is_read',
-        'created_at',
+        'sent_at',
     ];
 
     protected $useTimestamps = false;
-    protected $createdField  = 'created_at';
+    protected $createdField  = 'sent_at';
 
     public function getChat(int $me, int $other): array
     {
@@ -32,7 +33,7 @@ class MessageModel extends Model
                     ->where('receiver_id', $me)
                 ->groupEnd()
             ->groupEnd()
-            ->orderBy('created_at', 'ASC')
+            ->orderBy('sent_at', 'ASC')
             ->orderBy('id', 'ASC')
             ->findAll();
     }
@@ -49,7 +50,7 @@ class MessageModel extends Model
                     ->where('receiver_id', $me)
                 ->groupEnd()
             ->groupEnd()
-            ->orderBy('created_at', 'DESC')
+            ->orderBy('sent_at', 'DESC')
             ->orderBy('id', 'DESC')
             ->first();
     }
