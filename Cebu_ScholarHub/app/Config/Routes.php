@@ -25,6 +25,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('users/edit/(:num)', 'UsersController::edit/$1');
         $routes->post('users/edit/(:num)', 'UsersController::edit/$1');
         $routes->get('users/delete/(:num)', 'UsersController::delete/$1');
+        $routes->get('logs', 'Admin\ActivityLogs::index');
         
         $routes->get('reports', 'Admin\ReportsController::index');
 

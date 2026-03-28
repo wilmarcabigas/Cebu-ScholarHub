@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\ActivityLogger;
 use App\Libraries\ActivityNotifier;
 use App\Models\ScholarModel;
 use App\Models\SchoolModel;
@@ -14,12 +15,14 @@ class ScholarController extends BaseController
     protected $scholarModel;
     protected $schoolModel;
     protected $activityNotifier;
+    protected $activityLogger;
 
     public function __construct()
     {
         $this->scholarModel = new ScholarModel();
         $this->schoolModel  = new SchoolModel();
         $this->activityNotifier = new ActivityNotifier();
+        $this->activityLogger = new ActivityLogger();
     }
 
     public function index()
@@ -117,6 +120,23 @@ class ScholarController extends BaseController
             (int) $schoolId
         );
 
+        $this->activityLogger->logSchoolAccountAction(
+            $authUser,
+            'scholar_created',
+            'Scholar created',
+            "{$authUser['full_name']} created scholar {$scholarName} under {$schoolName}.",
+            [
+                'action' => 'create',
+                'school_id' => (int) $schoolId,
+                'subject_type' => 'scholar',
+                'subject_id' => (int) $scholarId,
+                'new_values' => $this->sanitizeScholarAuditData($data),
+                'metadata' => [
+                    'school_name' => $schoolName,
+                ],
+            ]
+        );
+
         return redirect()->to(site_url('scholars'))
             ->with('message', 'Scholar added successfully');
     }
@@ -147,10 +167,16 @@ class ScholarController extends BaseController
         ]);
     }
 
-    public function update($id)
+public function update($id)
 {
     $model = new ScholarModel();
     $authUser = session()->get('auth_user');
+    $existingScholar = $model->find($id);
+
+    if (!$existingScholar) {
+        return redirect()->to('/scholars')
+            ->with('error', 'Scholar not found');
+    }
 
     $validationRules = $model->scholarValidationRules($id);
 
@@ -206,6 +232,24 @@ class ScholarController extends BaseController
         (int) $schoolId
     );
 
+    $this->activityLogger->logSchoolAccountAction(
+        $authUser,
+        'scholar_updated',
+        'Scholar updated',
+        "{$authUser['full_name']} updated scholar {$scholarName} from {$schoolName}.",
+        [
+            'action' => 'update',
+            'school_id' => (int) $schoolId,
+            'subject_type' => 'scholar',
+            'subject_id' => (int) $id,
+            'old_values' => $this->sanitizeScholarAuditData($existingScholar),
+            'new_values' => $this->sanitizeScholarAuditData(array_merge($existingScholar, $data)),
+            'metadata' => [
+                'school_name' => $schoolName,
+            ],
+        ]
+    );
+
     return redirect()->to('/scholars')
         ->with('success', 'Scholar updated successfully');
 }
@@ -229,6 +273,23 @@ class ScholarController extends BaseController
                 "{$authUser['full_name']} deleted {$scholarName} from {$schoolName}.",
                 site_url('scholars'),
                 (int) $scholar['school_id']
+            );
+
+            $this->activityLogger->logSchoolAccountAction(
+                $authUser,
+                'scholar_deleted',
+                'Scholar deleted',
+                "{$authUser['full_name']} deleted scholar {$scholarName} from {$schoolName}.",
+                [
+                    'action' => 'delete',
+                    'school_id' => (int) $scholar['school_id'],
+                    'subject_type' => 'scholar',
+                    'subject_id' => (int) $id,
+                    'old_values' => $this->sanitizeScholarAuditData($scholar),
+                    'metadata' => [
+                        'school_name' => $schoolName,
+                    ],
+                ]
             );
         }
 
@@ -684,6 +745,32 @@ class ScholarController extends BaseController
                     site_url('scholars/import'),
                     $schoolIdForNotification
                 );
+
+                $this->activityLogger->logSchoolAccountAction(
+                    $authUser,
+                    'scholar_imported',
+                    'Scholar import completed',
+                    "{$authUser['full_name']} completed a scholar import for {$schoolName}.",
+                    [
+                        'action' => 'import',
+                        'school_id' => $schoolIdForNotification ?: ($authUser['school_id'] ?? null),
+                        'subject_type' => 'scholar_import',
+                        'metadata' => [
+                            'school_name' => $schoolName,
+                            'imported' => $importSummary['imported'],
+                            'updated' => $importSummary['updated'],
+                            'skipped' => $importSummary['skipped'],
+                            'total_rows' => $importSummary['total_rows'],
+                            'error_count' => count($importSummary['errors']),
+                        ],
+                        'new_values' => [
+                            'imported' => $importSummary['imported'],
+                            'updated' => $importSummary['updated'],
+                            'skipped' => $importSummary['skipped'],
+                            'total_rows' => $importSummary['total_rows'],
+                        ],
+                    ]
+                );
             }
 
             // ===== GENERATE ERROR REPORT IF THERE ARE ERRORS =====
@@ -770,6 +857,33 @@ class ScholarController extends BaseController
         }
 
         return $message;
+    }
+
+    private function sanitizeScholarAuditData(array $data): array
+    {
+        $allowedKeys = [
+            'school_id',
+            'first_name',
+            'middle_name',
+            'last_name',
+            'name_extension',
+            'gender',
+            'date_of_birth',
+            'email',
+            'contact_no',
+            'address',
+            'course',
+            'year_level',
+            'status',
+            'semesters_acquired',
+            'voucher_no',
+            'lrn_no',
+            'school_elementary',
+            'school_junior',
+            'school_senior_high',
+        ];
+
+        return array_intersect_key($data, array_flip($allowedKeys));
     }
 }
 

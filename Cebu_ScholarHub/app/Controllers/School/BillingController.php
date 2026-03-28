@@ -3,6 +3,7 @@
 namespace App\Controllers\School;
 
 use App\Controllers\BaseController;
+use App\Libraries\ActivityLogger;
 use App\Libraries\ActivityNotifier;
 use App\Models\BillModel;
 use App\Models\ScholarModel;
@@ -14,6 +15,7 @@ class BillingController extends BaseController
     protected $scholarModel;
     protected $schoolModel;
     protected $activityNotifier;
+    protected $activityLogger;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class BillingController extends BaseController
         $this->scholarModel = new ScholarModel();
         $this->schoolModel = new SchoolModel();
         $this->activityNotifier = new ActivityNotifier();
+        $this->activityLogger = new ActivityLogger();
     }
 
     public function index()
@@ -87,6 +90,31 @@ class BillingController extends BaseController
                 "{$authUser['full_name']} posted a bill for {$scholarName} from {$schoolName}.",
                 site_url('school/billing'),
                 (int) $authUser['school_id']
+            );
+
+            $this->activityLogger->logSchoolAccountAction(
+                $authUser,
+                'bill_posted',
+                'Billing posted',
+                "{$authUser['full_name']} posted a bill for {$scholarName} from {$schoolName}.",
+                [
+                    'action' => 'create',
+                    'school_id' => (int) $authUser['school_id'],
+                    'subject_type' => 'bill',
+                    'subject_id' => (int) $billId,
+                    'new_values' => [
+                        'scholar_id' => (int) $this->request->getPost('scholar_id'),
+                        'billing_period' => $this->request->getPost('billing_period'),
+                        'amount_due' => $this->request->getPost('amount_due'),
+                        'due_date' => $this->request->getPost('due_date'),
+                        'remarks' => $this->request->getPost('remarks'),
+                        'status' => 'pending',
+                    ],
+                    'metadata' => [
+                        'school_name' => $schoolName,
+                        'scholar_name' => $scholarName,
+                    ],
+                ]
             );
         }
 

@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Libraries\ActivityLogger;
 use App\Models\UserModel;
 use CodeIgniter\Config\Services;
 use CodeIgniter\I18n\Time;
@@ -10,10 +11,12 @@ use CodeIgniter\I18n\Time;
 class AuthController extends BaseController
 {
     protected $userModel;
+    protected ActivityLogger $activityLogger;
 
     public function __construct()
     {
         $this->userModel = new UserModel();
+        $this->activityLogger = new ActivityLogger();
         helper(['form']);
     }
 
@@ -190,6 +193,26 @@ class AuthController extends BaseController
             'reset_password_verified',
         ]);
 
+        $this->activityLogger->logSchoolAccountAction(
+            $user,
+            'account_login',
+            'School account signed in',
+            "{$user['full_name']} signed in to the partner school account.",
+            [
+                'action' => 'login',
+                'subject_type' => 'user',
+                'subject_id' => (int) $user['id'],
+                'school_id' => $user['school_id'] ?? null,
+                'new_values' => [
+                    'last_login_at' => Time::now()->toDateTimeString(),
+                ],
+                'metadata' => [
+                    'email' => $user['email'] ?? null,
+                    'role' => $user['role'] ?? null,
+                ],
+            ]
+        );
+
         return redirect()->to('/dashboard');
     }
 
@@ -330,6 +353,27 @@ class AuthController extends BaseController
     public function logout()
     {
         $session = Services::session();
+
+        $user = $session->get('auth_user');
+        if (is_array($user)) {
+            $this->activityLogger->logSchoolAccountAction(
+                $user,
+                'account_logout',
+                'School account signed out',
+                "{$user['full_name']} signed out of the partner school account.",
+                [
+                    'action' => 'logout',
+                    'subject_type' => 'user',
+                    'subject_id' => (int) ($user['id'] ?? 0),
+                    'school_id' => $user['school_id'] ?? null,
+                    'metadata' => [
+                        'email' => $user['email'] ?? null,
+                        'role' => $user['role'] ?? null,
+                    ],
+                ]
+            );
+        }
+
         $session->destroy();
 
         return redirect()->to('/login')
