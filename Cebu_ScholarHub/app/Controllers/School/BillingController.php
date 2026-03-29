@@ -3,6 +3,7 @@
 namespace App\Controllers\School;
 
 use App\Controllers\BaseController;
+use App\Libraries\ActivityLogger;
 use App\Libraries\ActivityNotifier;
 use App\Models\BillingBatchModel;
 use App\Models\BillingItemModel;
@@ -14,12 +15,14 @@ use App\Models\SchoolModel;
 class BillingController extends BaseController
 {
     protected $activityNotifier;
+    protected $activityLogger;
     protected $schoolModel;
 
     public function __construct()
     {
         $this->activityNotifier = new ActivityNotifier();
-        $this->schoolModel = new SchoolModel();
+        $this->activityLogger   = new ActivityLogger();
+        $this->schoolModel      = new SchoolModel();
     }
 
     // ------------------------------------------------------------------

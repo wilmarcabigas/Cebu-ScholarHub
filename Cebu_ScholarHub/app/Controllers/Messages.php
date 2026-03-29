@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Libraries\ActivityLogger;
 use App\Models\MessageModel;
 use App\Models\UserModel;
 
@@ -10,11 +11,13 @@ class Messages extends BaseController
 {
     protected MessageModel $messageModel;
     protected UserModel $userModel;
+    protected ActivityLogger $activityLogger;
 
     public function __construct()
     {
         $this->messageModel = new MessageModel();
         $this->userModel    = new UserModel();
+        $this->activityLogger = new ActivityLogger();
     }
 
     private function getAuthUser(): ?array
@@ -173,6 +176,26 @@ class Messages extends BaseController
             'is_read'      => 0,
             'sent_at'      => date('Y-m-d H:i:s'),
         ]);
+
+        $this->activityLogger->logSchoolAccountAction(
+            $authUser,
+            'message_sent',
+            'Message sent to Cebu admin',
+            "{$authUser['full_name']} sent a message to {$otherUser['full_name']}.",
+            [
+                'action' => 'create',
+                'school_id' => $authUser['school_id'] ?? null,
+                'subject_type' => 'message',
+                'subject_id' => (int) $messageId,
+                'new_values' => [
+                    'receiver_id' => $receiverId,
+                    'message_preview' => mb_substr($message, 0, 120),
+                ],
+                'metadata' => [
+                    'receiver_role' => $otherUser['role'] ?? null,
+                ],
+            ]
+        );
 
         if ($this->request->isAJAX()) {
             return $this->response->setJSON([

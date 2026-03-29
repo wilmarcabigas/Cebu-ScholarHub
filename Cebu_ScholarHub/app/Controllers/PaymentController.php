@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Libraries\ActivityLogger;
 use App\Models\PaymentModel;
 use App\Models\BillModel;
 use App\Models\BillingBatchModel;
@@ -14,9 +15,11 @@ class PaymentController extends BaseController
     // ------------------------------------------------------------------
     public function store()
     {
-        $paymentModel = new PaymentModel();
-        $billModel    = new BillModel();
-        $batchModel   = new BillingBatchModel();
+        $paymentModel   = new PaymentModel();
+        $billModel      = new BillModel();
+        $batchModel     = new BillingBatchModel();
+        $activityLogger = new ActivityLogger();
+        $authUser       = auth_user();
 
         $billId      = (int) $this->request->getPost('bill_id');
         $amountPaid  = (float) $this->request->getPost('amount_paid');
@@ -37,6 +40,11 @@ class PaymentController extends BaseController
             return redirect()->back()->with('error', 'Payment of ₱' . number_format($amountPaid, 2) . ' exceeds the remaining balance of ₱' . number_format($remaining, 2) . '.');
         }
 
+        $previousBillState = [
+            'amount_paid' => $bill['amount_paid'],
+            'status'      => $bill['status'],
+        ];
+
         $db = db_connect();
         $db->transStart();
 
@@ -46,8 +54,10 @@ class PaymentController extends BaseController
             'amount_paid'  => $amountPaid,
             'payment_date' => $paymentDate,
             'remarks'      => $remarks,
-            'updated_by'   => auth_user()['id'],
+            'updated_by'   => $authUser['id'],
         ]);
+
+        $paymentId = (int) $paymentModel->getInsertID();
 
         // Step 4 — update bill status
         $newTotalPaid = $alreadyPaid + $amountPaid;
@@ -68,6 +78,32 @@ class PaymentController extends BaseController
         if (!$db->transStatus()) {
             return redirect()->back()->with('error', 'Payment failed. Please try again.');
         }
+
+        $activityLogger->logSchoolAccountAction(
+            $authUser,
+            'payment_recorded',
+            'Payment recorded',
+            "{$authUser['full_name']} recorded a payment of ₱" . number_format($amountPaid, 2) . " for bill #{$billId}.",
+            [
+                'action'       => 'create',
+                'subject_type' => 'payment',
+                'subject_id'   => $paymentId,
+                'old_values'   => ['bill' => $previousBillState],
+                'new_values'   => [
+                    'payment' => [
+                        'bill_id'      => $billId,
+                        'amount_paid'  => $amountPaid,
+                        'payment_date' => $paymentDate,
+                        'remarks'      => $remarks,
+                    ],
+                    'bill' => [
+                        'amount_paid' => $newTotalPaid,
+                        'status'      => $newStatus,
+                    ],
+                ],
+                'metadata' => ['bill_id' => $billId],
+            ]
+        );
 
         return redirect()->back()->with('success', 'Payment of ₱' . number_format($amountPaid, 2) . ' recorded successfully.');
     }

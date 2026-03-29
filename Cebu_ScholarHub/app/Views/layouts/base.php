@@ -164,6 +164,13 @@
             </div>
           <?php endif; ?>
 
+          <?php if (auth_has_role(['admin', 'staff'])): ?>
+            <a href="<?= site_url('admin/logs') ?>"
+               class="inline-flex items-center rounded-2xl border border-white/70 bg-white/85 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-amber-200 hover:text-amber-700 hover:shadow-softmd focus:outline-none focus:ring-2 focus:ring-amber-300">
+              Logs
+            </a>
+          <?php endif; ?>
+
           <div class="hidden items-center gap-3 rounded-2xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm backdrop-blur md:flex">
             <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 text-sm font-bold text-white shadow-md">
               <?= strtoupper(substr(auth_user()['full_name'] ?? 'U', 0, 1)) ?>
