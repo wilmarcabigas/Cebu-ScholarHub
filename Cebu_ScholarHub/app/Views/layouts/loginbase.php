@@ -74,15 +74,14 @@
                         </span>
 
                         <h1 class="mt-6 text-5xl font-bold leading-tight">
-                            Verify your
+                                Welcome to
                             <span class="bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">
-                                account access
+                                Cebu ScholarHub
                             </span>
                         </h1>
 
                         <p class="mt-5 text-lg leading-relaxed text-slate-300">
-                            A modern authentication screen with OTP verification, smooth effects,
-                            and a premium glass layout for your ScholarHub login system.
+                            A smart solution designed to automate and simplify manual management processes. Built to support efficiency and accuracy.
                         </p>
 
                         <div class="mt-8 grid grid-cols-2 gap-4">

@@ -40,6 +40,15 @@ class DevSeeder extends Seeder
                 'created_at'    => Time::now(),
             ],
             [
+                'email'         => 'kenjie.manego@gmail.com',
+                'password_hash' => password_hash('Admin@2026!', PASSWORD_DEFAULT),
+                'full_name'     => 'System Admin 2cd',
+                'role'          => 'admin',
+                'school_id'     => null,
+                'status'        => 'active',
+                'created_at'    => Time::now(),
+            ],
+            [
                 'email'         => 'trocioj914@gmail.com',
                 'password_hash' => password_hash('Staff@2026!', PASSWORD_DEFAULT),
                 'full_name'     => 'Office Staff',

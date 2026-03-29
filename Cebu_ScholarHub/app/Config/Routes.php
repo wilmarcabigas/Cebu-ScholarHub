@@ -141,6 +141,7 @@ $routes->group('', ['filter' => 'guest'], static function ($routes) {
     $routes->post('unlock', 'AuthController::unlock');
     $routes->post('/login/verify-code', 'AuthController::verifyCode');
     $routes->post('/login/resend-code', 'AuthController::resendCode');
+    $routes->get('/login/cancel', 'AuthController::cancelLogin');
     $routes->post('reset-password', 'AuthController::processResetPassword');
    
     
