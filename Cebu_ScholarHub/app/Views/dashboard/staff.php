@@ -178,6 +178,21 @@
 
     </div>
 
+    <!-- Profile Quick Action -->
+    <div class="grid gap-4 sm:grid-cols-1 lg:grid-cols-1">
+        <a href="<?= site_url('profile/edit') ?>"
+           class="group rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 hover:shadow-md transition-shadow flex items-center gap-4">
+            <div class="w-11 h-11 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700 flex-shrink-0">
+                <?= strtoupper(substr(session()->get('auth_user')['full_name'] ?? 'S', 0, 2)) ?>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="font-semibold text-gray-900 truncate"><?= esc(session()->get('auth_user')['full_name'] ?? 'Staff') ?></p>
+                <p class="text-xs text-gray-500 truncate"><?= esc(session()->get('auth_user')['email'] ?? '') ?></p>
+            </div>
+            <span class="text-sm text-indigo-600 group-hover:translate-x-0.5 transition-transform whitespace-nowrap">Edit Profile →</span>
+        </a>
+    </div>
+
     <!-- Pending Billing Submissions + Recent Messages -->
     <div class="grid gap-4 lg:grid-cols-2">
 

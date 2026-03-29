@@ -150,4 +150,10 @@ $routes->group('', ['filter' => 'guest'], static function ($routes) {
 
 $routes->get('logout', 'AuthController::logout', ['filter' => 'auth']);
 
+// Profile routes (all authenticated users)
+$routes->group('profile', ['filter' => 'auth'], static function ($routes) {
+    $routes->get('edit', 'ProfileController::edit');
+    $routes->post('update', 'ProfileController::update');
+});
+
 
