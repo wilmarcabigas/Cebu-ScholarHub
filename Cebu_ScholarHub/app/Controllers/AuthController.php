@@ -23,7 +23,6 @@ class AuthController extends BaseController
     // Show login form
     public function login()
     {
-        session()->remove(['reset_password_user_id', 'reset_password_email', 'reset_password_verified']);
         return view('auth/login');
     }
 
